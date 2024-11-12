@@ -1,11 +1,11 @@
 import { Builder, Browser, By, Key, until } from "selenium-webdriver";
 import Chrome from "selenium-webdriver/chrome.js";
 
+// https://coinmarketcap.com/account/my-diamonds/
+
 (async function example() {
   const options = new Chrome.Options();
 
-  // options.addArguments("--headless");
-  // options.addArguments("--disable-css");
   options.addArguments("--disk-cache-dir=./cache");
   options.addArguments("--disk-cache-size=1000000");
 
@@ -61,9 +61,7 @@ import Chrome from "selenium-webdriver/chrome.js";
 
     const $modalBody = driver.findElement(By.css(".cmc-modal-body"));
     await $modalBody
-      .findElement(
-        By.xpath("/html/body/div[7]/div/div/div/div/div[2]/div[3]/button")
-      )
+      .findElement(By.xpath('//button/div/div[text()="Log In"]'))
       .click();
 
     await driver.sleep(10000);
