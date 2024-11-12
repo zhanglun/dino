@@ -11,21 +11,43 @@ import Chrome from "selenium-webdriver/chrome.js";
 
   let driver = await new Builder()
     .forBrowser(Browser.CHROME)
-    .setChromeOptions(options.setPageLoadStrategy("normal"))
+    // .setChromeOptions(options.setPageLoadStrategy("eager"))
     .build();
 
   try {
     await driver.get("https://coinmarketcap.com/");
-    const $openSignInModal = await driver.findElement(
-      By.css('button[data-btnname="Log In"]')
+
+    const $openMenuButton = await driver.findElement(
+      By.xpath(
+        '//*[@id="__next"]/div[2]/div[1]/div[1]/div[2]/div[2]/div/div[4]/div[3]/div'
+        // '//*[@id="__next"]/div[2]/div[1]/div[2]/div/div[1]/div[1]/section/section/div'
+      )
     );
-    await driver.wait(until.elementIsVisible($openSignInModal), 10000);
-    await driver.wait(until.elementIsEnabled($openSignInModal), 10000);
 
-    console.log($openSignInModal);
+    await driver.sleep(3000);
 
-    //await driver.findElement(By.id('kw')).sendKeys('webdriver', Key.RETURN)
-    await $openSignInModal.click();
+    await driver.wait(until.elementIsEnabled($openMenuButton), 10000);
+
+    console.log(
+      "🚀 ~ file: coinmarketcup.mjs:58 ~ example ~ $openMenuButton:",
+      await $openMenuButton.takeScreenshot()
+    );
+
+    await $openMenuButton.click();
+
+    await driver.sleep(2000);
+
+    const $loginButton = await driver.findElement(
+      By.xpath(
+        '//*[@id="__next"]/div[2]/div[1]/div[1]/div[2]/div[2]/div/div[3]/div[2]/div[2]/div[1]/button[2]'
+      )
+    );
+
+    await driver.wait(until.elementIsVisible($loginButton), 5000);
+
+    $loginButton.click();
+
+    await driver.sleep(2000);
 
     const email = await driver.findElement(
       By.css(".cmc-modal-body .email-input")
@@ -39,8 +61,12 @@ import Chrome from "selenium-webdriver/chrome.js";
 
     const $modalBody = driver.findElement(By.css(".cmc-modal-body"));
     await $modalBody
-      .findElement(By.css("//*[contains(text(), 'Log In')]"))
+      .findElement(
+        By.xpath("/html/body/div[7]/div/div/div/div/div[2]/div[3]/button")
+      )
       .click();
+
+    await driver.sleep(10000);
   } catch (error) {
     console.log(error);
   } finally {
