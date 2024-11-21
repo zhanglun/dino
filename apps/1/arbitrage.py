@@ -4,23 +4,42 @@ from datetime import datetime
 import time
 
 class CryptoArbitrage:
-    def __init__(self, exchanges=['binance', 'huobi', 'okx'], symbol='BTC/USDT'):
+    def __init__(self, exchanges=['binance', 'huobi', 'okx'], symbol='JUP/USDT', proxy=None):
         """
         初始化套利程序
         :param exchanges: 交易所列表
         :param symbol: 交易对
+        :param proxy: 代理设置，格式如 'http://127.0.0.1:7890'
         """
         self.exchanges = {}
         self.symbol = symbol
+        
+        # 代理配置
+        self.proxy = proxy
+        if proxy:
+            print(f"使用代理: {proxy}")
         
         # 初始化交易所，使用公共API
         for exchange_id in exchanges:
             try:
                 exchange_class = getattr(ccxt, exchange_id)
-                exchange = exchange_class({
+                # 交易所配置
+                config = {
                     'enableRateLimit': True,
                     'timeout': 30000,
-                })
+                }
+                
+                # 添加代理配置
+                if proxy:
+                    config.update({
+                        'proxies': {
+                            'http': proxy,  # HTTP代理
+                            'https': proxy, # HTTPS代理
+                        }
+                    })
+                
+                exchange = exchange_class(config)
+                
                 # 初始化市场数据
                 exchange.load_markets()
                 if self.symbol in exchange.markets:
@@ -144,8 +163,9 @@ class CryptoArbitrage:
             print(f"监控过程中出错: {str(e)}")
 
 def main():
-    # 创建套利程序实例
-    arbitrage = CryptoArbitrage()
+    # 创建套利程序实例，设置代理
+    proxy = 'http://127.0.0.1:7890'  # 这里替换为您的代理地址
+    arbitrage = CryptoArbitrage(proxy=proxy)
     
     # 开始监控套利机会
     arbitrage.monitor_opportunities(interval=10, min_profit_percent=0.5)
