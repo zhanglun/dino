@@ -1,14 +1,30 @@
+import { join } from 'path';
 import containerQueries from '@tailwindcss/container-queries';
 import forms from '@tailwindcss/forms';
 import typography from '@tailwindcss/typography';
 import type { Config } from 'tailwindcss';
+import { skeleton } from '@skeletonlabs/tw-plugin';
 
 export default {
-	content: ['./src/**/*.{html,js,svelte,ts}'],
+  darkMode: 'class',
+  content: [
+    './src/**/*.{html,js,svelte,ts}',
+    // 3. Append the path to the Skeleton package
+    join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
+  ],
+  theme: {
+    extend: {}
+  },
 
-	theme: {
-		extend: {}
-	},
-
-	plugins: [typography, forms, containerQueries]
+  plugins: [
+    typography,
+    forms,
+    containerQueries,
+    skeleton({
+      themes: {
+        // Register each theme within this array:
+        preset: ['skeleton', 'modern', 'crimson']
+      }
+    })
+  ]
 } satisfies Config;
