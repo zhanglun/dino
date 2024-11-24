@@ -1,6 +1,15 @@
 <script lang="ts">
+	import 'iconify-icon';
+	import { initializeStores, Modal, type ModalComponent } from '@skeletonlabs/skeleton';
+	import AddWalletModal from '../components/modals/AddWalletModal.svelte';
 	import Header from './Header.svelte';
 	import '../app.css';
+
+	initializeStores();
+  
+	const modalRegistry: Record<string, ModalComponent> = {
+		addWalletModal: { ref: AddWalletModal }
+	};
 
 	let { children } = $props();
 </script>
@@ -12,9 +21,8 @@
 		{@render children()}
 	</main>
 
-	<footer>
-
-	</footer>
+	<footer></footer>
+	<Modal components={modalRegistry} />
 </div>
 
 <style>
