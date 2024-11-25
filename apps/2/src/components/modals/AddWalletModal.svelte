@@ -36,8 +36,8 @@
   }
 
   // Base Classes
-  const cBase = 'card w-modal shadow-xl space-y-4 relative';
-  const cHeader = 'text-xl font-bold px-8 pt-10';
+  const cBase = 'card shadow-xl relative w-[490px]';
+  const cHeader = 'text-xl font-bold px-8 pt-10 flex gap-4 items-center';
 </script>
 
 <!-- @component This example creates a simple form modal. -->
@@ -46,13 +46,13 @@
   <div class={cBase}>
     {#if showAvatars}
       <header class={cHeader}>
-        <iconify-icon icon="fluent:arrow-left-12-regular" onclick={() => (showAvatars = false)}
+        <iconify-icon icon="fluent:arrow-left-12-regular" class="text-gray-600 cursor-pointer hover:text-gray-800" onclick={() => (showAvatars = false)}
         ></iconify-icon>
         Change Avatar
       </header>
       <div class="flex flex-col gap-6 p-8">
         <div>Portfolio Avatar</div>
-        <div class="flex flex-row items-center justify-between">
+        <div class="flex flex-row items-center justify-between mt-3">
           <AvatarCustomizer color={color} emoji={emoji} onSave={updateAvatarWhenCustomizerSaves}
           />
         </div>
@@ -65,7 +65,7 @@
       <div class="flex flex-col gap-6 p-8">
         <div>
           <div>Portfolio Avatar</div>
-          <div class="flex flex-row items-center justify-between">
+          <div class="flex flex-row items-center justify-between mt-2">
             <div>
               <div
                 class="flex h-20 w-20 items-center justify-center rounded-full"
