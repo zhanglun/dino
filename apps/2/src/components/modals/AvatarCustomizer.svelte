@@ -15,48 +15,56 @@
     '#CA8A04', // Yellow
     '#9333EA', // Purple
     '#DB2777', // Pink
-    '#475569'  // Gray
+    '#475569' // Gray
   ];
 
   // Fluent Emoji 图标
   const emojis = [
     'fluent-emoji:beaming-face-with-smiling-eyes',
     'fluent-emoji:alien',
-    'fluent-emoji:angry-face-with-horns',
-    'fluent-emoji:angry-face',
     'fluent-emoji:astonished-face',
     'fluent-emoji:zany-face',
-    'fluent-emoji:smiling-face-with-heart',
+    'fluent-emoji:face-with-spiral-eyes',
+    'fluent-emoji:partying-face',
+    'fluent-emoji:face-vomiting',
     'fluent-emoji:skull',
-    'fluent-emoji:orange-heart',
-    'fluent-emoji:ant',
+
     'fluent-emoji:lion',
     'fluent-emoji:panda',
     'fluent-emoji:cat-face',
-    'fluent-emoji:fox-face',
     'fluent-emoji:frog',
-    'fluent-emoji:pig',
-    'fluent-emoji-rainbow',
-    'fluent-emoji-sun',
-    'fluent-emoji-crescent-moon',
-    'fluent-emoji-star',
-    'fluent-emoji-four-leaf-clover',
-    'fluent-emoji-cherry-blossom',
-    'fluent-emoji-hibiscus',
-    'fluent-emoji-guitar',
-    'fluent-emoji-video-game',
-    'fluent-emoji-soccer-ball',
-    'fluent-emoji-game-die',
-    'fluent-emoji-direct-hit',
-    'fluent-emoji-artist-palette',
-    'fluent-emoji-performing-arts',
-    'fluent-emoji-rocket',
-    'fluent-emoji-sparkles',
-    'fluent-emoji-dizzy',
-    'fluent-emoji-glowing-star',
-    'fluent-emoji-high-voltage',
-    'fluent-emoji-fire',
-    'fluent-emoji-light-bulb'
+    'fluent-emoji:pig-face',
+    'fluent-emoji:unicorn',
+    'fluent-emoji:cow-face',
+    'fluent-emoji:chicken',
+
+    'fluent-emoji:sun-with-face',
+    'fluent-emoji:first-quarter-moon-face',
+    'fluent-emoji:sparkles',
+    'fluent-emoji:four-leaf-clover',
+    'fluent-emoji:sparkling-heart',
+    'fluent-emoji:sunflower',
+    'fluent-emoji:rainbow',
+    'fluent-emoji:cactus',
+
+    'fluent-emoji:banana',
+    'fluent-emoji:kiwi-fruit',
+    'fluent-emoji:cherries',
+    'fluent-emoji:watermelon',
+    'fluent-emoji:cookie',
+    'fluent-emoji:pizza',
+    'fluent-emoji:cheese-wedge',
+    'fluent-emoji:hamburger',
+
+    'fluent-emoji:dvd',
+    'fluent-emoji:magnet',
+    'fluent-emoji:crown',
+    'fluent-emoji:bathtub',
+    'fluent-emoji:yen-banknote',
+    'fluent-emoji:dollar-banknote',
+    'fluent-emoji:coin',
+    'fluent-emoji:dna',
+
   ];
 
   function handleSave() {
@@ -71,7 +79,7 @@
   <!-- Avatar Preview -->
   <div class="flex justify-center">
     <div
-      class="w-20 h-20 rounded-full flex items-center justify-center"
+      class="flex h-20 w-20 items-center justify-center rounded-full"
       style="background-color: {selectedColor}"
     >
       <iconify-icon icon={selectedEmoji} width="32" height="32"></iconify-icon>
@@ -80,11 +88,14 @@
 
   <!-- Color Selection -->
   <div>
-    <div class="text-sm font-medium mb-2">Select Color</div>
-    <div class="flex gap-4 flex-wrap justify-center">
+    <div class="mb-2 text-sm font-medium">Select Color</div>
+    <div class="flex flex-wrap justify-center gap-4">
       {#each colors as color}
         <button
-          class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 {selectedColor === color ? 'border-white' : 'border-transparent'}"
+          class="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 {selectedColor ===
+          color
+            ? 'border-white'
+            : 'border-transparent'}"
           style="background-color: {color}"
           on:click={() => (selectedColor = color)}
         />
@@ -94,11 +105,14 @@
 
   <!-- Emoji Selection -->
   <div>
-    <div class="text-sm font-medium mb-2">Select Emoji</div>
-    <div class="grid grid-cols-10 gap-2">
+    <div class="mb-2 text-sm font-medium">Select Emoji</div>
+    <div class="grid grid-cols-8 gap-2">
       {#each emojis as emoji}
         <button
-          class="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-surface-600 transition-colors {selectedEmoji === emoji ? 'bg-surface-600' : ''}"
+          class="hover:bg-surface-600 flex h-10 w-10 items-center justify-center rounded-lg transition-colors {selectedEmoji ===
+          emoji
+            ? 'bg-surface-600'
+            : ''}"
           on:click={() => (selectedEmoji = emoji)}
         >
           <iconify-icon icon={emoji} width="24" height="24"></iconify-icon>
@@ -108,10 +122,5 @@
   </div>
 
   <!-- Save Button -->
-  <button
-    class="btn variant-filled-primary w-full"
-    on:click={handleSave}
-  >
-    Save
-  </button>
+  <button class="btn variant-filled-primary w-full" on:click={handleSave}> Save </button>
 </div>
