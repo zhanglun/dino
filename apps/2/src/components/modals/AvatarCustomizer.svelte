@@ -1,25 +1,18 @@
-<script lang="ts">
-  import { getModalStore } from '@skeletonlabs/skeleton';
-
-  const props = $props();
-  let avatar = $state(props.avatar);
-  let selectedColor = $state('#4F46E5'); // 默认选择一个颜色
-  let selectedEmoji = $state('fluent-emoji-face-grin'); // 默认emoji
-
-  // 预定义8种颜色
-  const colors = [
-    '#4F46E5', // Indigo
-    '#2563EB', // Blue
-    '#DC2626', // Red
-    '#16A34A', // Green
-    '#CA8A04', // Yellow
-    '#9333EA', // Purple
-    '#DB2777', // Pink
-    '#475569' // Gray
+<script lang="ts" module>
+  // 预定义8种颜色，用于emoji背景
+  export const colors = [
+    '#6B7280', // 深灰
+    '#60A5FA', // 天蓝
+    '#34D399', // 薄荷绿
+    '#FBBF24', // 金黄
+    '#F87171', // 珊瑚红
+    '#A78BFA', // 淡紫
+    '#EC4899', // 粉红
+    '#14B8A6' // 青绿
   ];
 
   // Fluent Emoji 图标
-  const emojis = [
+  export const emojis = [
     'fluent-emoji:beaming-face-with-smiling-eyes',
     'fluent-emoji:alien',
     'fluent-emoji:astonished-face',
@@ -63,19 +56,33 @@
     'fluent-emoji:yen-banknote',
     'fluent-emoji:dollar-banknote',
     'fluent-emoji:coin',
-    'fluent-emoji:dna',
-
+    'fluent-emoji:dna'
   ];
 
-  function handleSave() {
-    dispatch('save', {
-      emoji: selectedEmoji,
-      color: selectedColor
-    });
+  export function getRandomColor() {
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  export function getRandomEmoji() {
+    return emojis[Math.floor(Math.random() * emojis.length)];
   }
 </script>
 
-<div class="flex flex-col gap-6 p-4">
+<script lang="ts">
+  const props = $props<{
+    color?: string;
+    emoji?: string;
+    onSave: (data: { color: string; emoji: string }) => void;
+  }>();
+  let selectedColor = $state(props.color || colors[0]); // 默认选择一个颜色
+  let selectedEmoji = $state(props.emoji || emojis[0]); // 默认emoji
+
+  function handleSave() {
+    props.onSave({ color: selectedColor, emoji: selectedEmoji });
+  }
+</script>
+
+<div class="flex flex-col gap-8">
   <!-- Avatar Preview -->
   <div class="flex justify-center">
     <div
@@ -88,39 +95,40 @@
 
   <!-- Color Selection -->
   <div>
-    <div class="mb-2 text-sm font-medium">Select Color</div>
     <div class="flex flex-wrap justify-center gap-4">
       {#each colors as color}
         <button
-          class="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 {selectedColor ===
+          class="h-6 w-6 rounded-full border-2 transition-transform hover:scale-110 {selectedColor ===
           color
             ? 'border-white'
             : 'border-transparent'}"
           style="background-color: {color}"
-          on:click={() => (selectedColor = color)}
-        />
+          onclick={() => (selectedColor = color)}
+          aria-label="button"
+        ></button>
       {/each}
     </div>
   </div>
 
   <!-- Emoji Selection -->
   <div>
-    <div class="mb-2 text-sm font-medium">Select Emoji</div>
-    <div class="grid grid-cols-8 gap-2">
+    <div class="mb-3 text-sm font-medium">Select Emoji</div>
+    <div class="grid grid-cols-8 gap-4">
       {#each emojis as emoji}
         <button
           class="hover:bg-surface-600 flex h-10 w-10 items-center justify-center rounded-lg transition-colors {selectedEmoji ===
           emoji
             ? 'bg-surface-600'
             : ''}"
-          on:click={() => (selectedEmoji = emoji)}
+          onclick={() => (selectedEmoji = emoji)}
+          aria-label="button"
         >
-          <iconify-icon icon={emoji} width="24" height="24"></iconify-icon>
+          <iconify-icon icon={emoji} width="34" height="34"></iconify-icon>
         </button>
       {/each}
     </div>
   </div>
 
   <!-- Save Button -->
-  <button class="btn variant-filled-primary w-full" on:click={handleSave}> Save </button>
+  <button class="btn variant-filled-primary w-full" onclick={handleSave}> Save </button>
 </div>

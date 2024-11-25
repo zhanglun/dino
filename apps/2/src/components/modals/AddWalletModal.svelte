@@ -1,27 +1,36 @@
 <script lang="ts">
   import type { SvelteComponent } from 'svelte';
   import { getModalStore } from '@skeletonlabs/skeleton';
-	import AvatarCustomizer from './AvatarCustomizer.svelte';
+  import AvatarCustomizer, { getRandomColor, getRandomEmoji } from './AvatarCustomizer.svelte';
 
   const modalStore = getModalStore();
-  const { parent }: { parent: SvelteComponent } = $props();
+  const { parent, color, emoji, name } = $props<{ parent: SvelteComponent, color?: string, emoji?: string, name?: string }>();
   let formData = $state({
-    avatar: '',
-    name: '',
+    color: color || getRandomColor(),
+    emoji: emoji ||getRandomEmoji(),
+    name: name || '',
     address: ''
   });
+  let showAvatars = $state(false);
+
   const disabled = $derived(
     formData.name.length === 0 || formData.address.length === 0 || formData.name.length > 24
   );
   const txtLength = $derived(formData.name.length);
 
+  function updateAvatarWhenCustomizerSaves(data: any) {
+    formData.color = data.color;
+    formData.emoji = data.emoji;
+    showAvatars = false
+  }
+
   function onFormSubmit(): void {
     if (disabled) return;
     if ($modalStore[0].response) $modalStore[0].response(formData);
+
     modalStore.close();
   }
 
-  let showAvatars = $state(false);
   function handleChangeAvatar() {
     showAvatars = true;
   }
@@ -44,10 +53,8 @@
       <div class="flex flex-col gap-6 p-8">
         <div>Portfolio Avatar</div>
         <div class="flex flex-row items-center justify-between">
-          <AvatarCustomizer on:save={(event) => {
-            formData.avatar = event.detail;
-            showAvatars = false;
-          }} />
+          <AvatarCustomizer color={color} emoji={emoji} onSave={updateAvatarWhenCustomizerSaves}
+          />
         </div>
       </div>
     {:else}
@@ -59,7 +66,14 @@
         <div>
           <div>Portfolio Avatar</div>
           <div class="flex flex-row items-center justify-between">
-            <div>Portfolio Avatar</div>
+            <div>
+              <div
+                class="flex h-20 w-20 items-center justify-center rounded-full"
+                style="background-color: {formData.color}"
+              >
+                <iconify-icon icon={formData.emoji} width="32" height="32"></iconify-icon>
+              </div>
+            </div>
             <button class="variant-filled-primary btn" onclick={handleChangeAvatar}>Change</button>
           </div>
         </div>
