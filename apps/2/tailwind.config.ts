@@ -13,7 +13,13 @@ export default {
     join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}')
   ],
   theme: {
-    extend: {}
+    extend: {
+      colors: {
+        border: {
+          DEFAULT: 'var(--text-gray-600)'
+        }
+      }
+    }
   },
 
   plugins: [

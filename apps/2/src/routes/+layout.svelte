@@ -1,5 +1,6 @@
 <script lang="ts">
   import 'iconify-icon';
+  import '@fontsource/sn-pro';
   import { initializeStores, Modal, type ModalComponent } from '@skeletonlabs/skeleton';
   import AddWalletModal from '../components/modals/AddWalletModal.svelte';
   import Header from './Header.svelte';
