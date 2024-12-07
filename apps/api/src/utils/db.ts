@@ -1,33 +1,64 @@
-import mongoose from 'mongoose';
+import { Pool } from 'pg';
 
-export async function connectDB() {
-  const dbUrl = process.env.DATABASE_URL || 'mongodb://localhost:27017/web3-assets';
-  
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+export async function query(text: string, params?: any[]) {
+  const client = await pool.connect();
   try {
-    await mongoose.connect(dbUrl);
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+    const result = await client.query(text, params);
+    return result;
+  } finally {
+    client.release();
   }
-  
-  mongoose.connection.on('error', err => {
-    console.error('MongoDB connection error:', err);
-  });
-  
-  mongoose.connection.on('disconnected', () => {
-    console.log('MongoDB disconnected');
-  });
-  
-  // 优雅关闭
-  process.on('SIGINT', async () => {
-    try {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed through app termination');
-      process.exit(0);
-    } catch (err) {
-      console.error('Error closing MongoDB connection:', err);
-      process.exit(1);
-    }
-  });
+}
+
+export async function getClient() {
+  const client = await pool.connect();
+  return client;
+}
+
+// 事务辅助函数
+export async function transaction<T>(callback: (client: any) => Promise<T>): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (e) {
+    await client.query('ROLLBACK');
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+// 健康检查
+export async function checkConnection() {
+  try {
+    const client = await pool.connect();
+    await client.query('SELECT NOW()');
+    client.release();
+    return true;
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return false;
+  }
+}
+
+// 初始化数据库
+export async function initializeDatabase() {
+  try {
+    const client = await pool.connect();
+    const schema = await import('../models/schema.sql');
+    await client.query(schema.default);
+    client.release();
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+    throw error;
+  }
 }

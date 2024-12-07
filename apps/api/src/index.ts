@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 import { connectDB } from './utils/db';
 import { assetsRouter } from './routes/assets';
 import { historyRouter } from './routes/history';
+import { walletsRouter } from './routes/wallets';
 
 // 加载环境变量
 config();
@@ -19,6 +20,7 @@ app.use('*', prettyJSON());
 app.use('*', cors());
 
 // 路由
+app.route('/api/wallets', walletsRouter);
 app.route('/api/assets', assetsRouter);
 app.route('/api/history', historyRouter);
 
