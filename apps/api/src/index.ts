@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { config } from 'dotenv';
-import { connectDB } from './utils/db';
+// import { connectDB } from './utils/db';
 import { assetsRouter } from './routes/assets';
 import { historyRouter } from './routes/history';
 import { walletsRouter } from './routes/wallets';
@@ -28,10 +28,10 @@ app.route('/api/history', historyRouter);
 app.get('/health', (c) => c.json({ status: 'ok' }));
 
 // 连接数据库
-connectDB();
+// connectDB();
 
 // 启动服务器
-const port = process.env.PORT || 3000;
+const port = (process.env.PORT || 3000) as number;
 console.log(`Server is running on port ${port}`);
 
 serve({

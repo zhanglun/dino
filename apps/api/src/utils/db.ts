@@ -1,9 +1,15 @@
 import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '@prisma/client'
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
+
+const adapter = new PrismaPg(pool)
+
+export const prisma = new PrismaClient({ adapter })
 
 export async function query(text: string, params?: any[]) {
   const client = await pool.connect();
@@ -46,19 +52,5 @@ export async function checkConnection() {
   } catch (error) {
     console.error('Database connection error:', error);
     return false;
-  }
-}
-
-// 初始化数据库
-export async function initializeDatabase() {
-  try {
-    const client = await pool.connect();
-    const schema = await import('../models/schema.sql');
-    await client.query(schema.default);
-    client.release();
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    throw error;
   }
 }

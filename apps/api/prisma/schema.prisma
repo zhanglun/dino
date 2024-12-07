@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters", "views"] // change from default
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  address   String   @unique @db.VarChar(42)
+  name      String   @db.VarChar(100)
+  color     String   @default("#6366f1") @db.VarChar(7)
+  emoji     String   @default("fluent-emoji:beaming-face-with-smiling-eyes") @db.VarChar(10)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // 关联
+  assets       Asset[]
+  assetHistory AssetHistory[]
+
+  @@map("wallets")
+}
+
+model Asset {
+  id           Int      @id @default(autoincrement())
+  walletId     Int      @map("wallet_id")
+  chainId      Int      @map("chain_id")
+  tokenAddress String   @map("token_address") @db.VarChar(42)
+  symbol       String   @db.VarChar(20)
+  amount       Decimal  @db.Decimal(78, 0)
+  decimals     Int
+  value        Decimal  @db.Decimal(78, 18)
+  timestamp    DateTime @default(now()) @db.Timestamptz(6)
+
+  // 关联
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, tokenAddress])
+  @@index([timestamp])
+  @@map("assets")
+}
+
+model AssetHistory {
+  id         Int      @id @default(autoincrement())
+  walletId   Int      @map("wallet_id")
+  totalValue Decimal  @map("total_value") @db.Decimal(78, 18)
+  assets     Json     @db.JsonB
+  timestamp  DateTime @default(now()) @db.Timestamptz(6)
+
+  // 关联
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId, timestamp])
+  @@map("asset_history")
+}
+
+// 视图：钱包资产汇总
+view WalletSummary {
+  walletId   Int     @id @map("wallet_id")
+  address    String  @db.VarChar(42)
+  name       String  @db.VarChar(100)
+  chainCount Int     @map("chain_count")
+  tokenCount Int     @map("token_count")
+  totalValue Decimal @map("total_value") @db.Decimal(78, 18)
+
+  @@map("wallet_summaries")
+}
