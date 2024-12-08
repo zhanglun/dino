@@ -3,15 +3,13 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
-import { config } from 'dotenv';
+import 'dotenv/config'
 // import { connectDB } from './utils/db';
 import { assetsRouter } from './routes/assets';
 import { historyRouter } from './routes/history';
 import { walletsRouter } from './routes/wallets';
 
 // 加载环境变量
-config();
-
 const app = new Hono();
 
 // 中间件
