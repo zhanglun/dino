@@ -1,57 +1,67 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import request from 'supertest';
-import { app } from '../../src/index';
+import { app } from "../../src/app";
 
-describe('Wallets API', () => {
-    let server;
+describe("Wallets API", () => {
+  it("应能成功添加钱包", async () => {
+    const res = await app.request("/api/wallets", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "My Wallet",
+        address: "0x1234567890abcdef",
+      }),
+      headers: new Headers({ "Content-Type": "application/json" }),
+    });
+    expect(res.status).toBe(200);
+    expect(201);
 
-    beforeAll(() => {
-        server = app.listen();
+    expect(res.body).toEqual({
+      id: expect.any(Number),
+      name: "My Wallet",
+      address: "0x1234567890abcdef",
+    });
+  });
+
+  it("添加钱包时缺少必需字段应返回 400", async () => {
+    const response = await app.request("/api/wallets", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "My Wallet",
+      }),
+    });
+    expect(response.status).toBe(400);
+
+    expect(response.body).toEqual({ error: "Name and address are required" });
+  });
+
+  it("应能成功获取钱包列表", async () => {
+    const res = await app.request("/api/wallets", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "My Wallet",
+        address: "0x1234567890abcdef",
+      }),
+      headers: new Headers({ "Content-Type": "application/json" }),
     });
 
-    afterAll((done) => {
-        server.close(done);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      id: expect.any(Number),
+      name: "My Wallet",
+      address: "0x1234567890abcdef",
     });
 
-    it('应能成功添加钱包', async () => {
-        const response = await request(server)
-            .post('/api/wallets')
-            .send({ name: 'My Wallet', address: '0x1234567890abcdef' })
-            .expect('Content-Type', /json/)
-            .expect(201);
+    const res2 = await app.request("/api/wallets");
 
-        expect(response.body).toEqual({
-            id: expect.any(Number),
-            name: 'My Wallet',
-            address: '0x1234567890abcdef'
-        });
-    });
+    expect(res.status).toBe(200);
 
-    it('添加钱包时缺少必需字段应返回 400', async () => {
-        const response = await request(server)
-            .post('/api/wallets')
-            .send({ name: 'My Wallet' }) // 缺少 address
-            .expect('Content-Type', /json/)
-            .expect(400);
-
-        expect(response.body).toEqual({ error: 'Name and address are required' });
-    });
-
-    it('应能成功获取钱包列表', async () => {
-        await request(server)
-            .post('/api/wallets')
-            .send({ name: 'My Wallet', address: '0x1234567890abcdef' });
-
-        const response = await request(server)
-            .get('/api/wallets')
-            .expect('Content-Type', /json/)
-            .expect(200);
-
-        expect(response.body).toEqual(expect.arrayContaining([
-            expect.objectContaining({
-                name: 'My Wallet',
-                address: '0x1234567890abcdef'
-            })
-        ]));
-    });
+    expect(res.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "My Wallet",
+          address: "0x1234567890abcdef",
+        }),
+      ])
+    );
+  });
 });

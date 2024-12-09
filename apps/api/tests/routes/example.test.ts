@@ -1,26 +1,13 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import request from 'supertest';
-import { app } from '../../src/index';
+import { describe, it, expect } from "vitest";
+import { app } from "../../src/app";
 
-describe('API 路由测试', () => {
-  let server;
+describe("API 路由测试", () => {
+  it("示例：GET /api/health 应该返回 200", async () => {
+    const res = await app.request("/api/health");
 
-  beforeAll(() => {
-    server = app.listen();
-  });
-
-  afterAll((done) => {
-    server.close(done);
-  });
-
-  it('示例：GET /api/health 应该返回 200', async () => {
-    const response = await request(server)
-      .get('/api/health')
-      .expect('Content-Type', /json/)
-      .expect(200);
-    
-    expect(response.body).toEqual({
-      status: 'ok'
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      status: "ok",
     });
   });
 });
