@@ -34,40 +34,42 @@ router.get('/', async (c) => {
       include: {
         _count: {
           select: {
-            assets: true
-          }
+            assets: true,
+          },
         },
         assets: {
           select: {
             chainId: true,
-            value: true
-          }
-        }
+            value: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
-    
+
     // 处理统计数据
-    const walletsWithStats = wallets.map(wallet => {
-      const chainCount = new Set(wallet.assets.map(a => a.chainId)).size;
-      const totalValue = wallet.assets.reduce((sum, asset) => sum + Number(asset.value), 0);
-      
+    const walletsWithStats = wallets.map((wallet) => {
+      const chainCount = new Set(wallet.assets.map((a) => a.chainId)).size;
+      const totalValue = wallet.assets.reduce(
+        (sum, asset) => sum + Number(asset.value),
+        0
+      );
+
       return {
         ...wallet,
         chainCount,
         tokenCount: wallet._count.assets,
         totalValue,
         assets: undefined,
-        _count: undefined
+        _count: undefined,
       };
     });
-    
+
     return c.json(walletsWithStats);
   } catch (error) {
-    console.error('Error fetching wallets:', error);
-    return c.json({ error: 'Failed to fetch wallets' }, 500);
+    return c.json({ error: "Failed to fetch wallets" }, 500);
   }
 });
 
