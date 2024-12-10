@@ -21,6 +21,7 @@ specifiers:
   vitest: ^2.1.8
   web3: ^4.16.0
   zod: ^3.23.8
+  zod-validation-error: ^3.4.0
 
 dependencies:
   '@hono/node-server': 1.13.7_hono@3.12.12
@@ -38,6 +39,7 @@ dependencies:
   vite: 6.0.3_peeenggisnso5y6wd4lopk35fy
   web3: 4.16.0_44yq2puepboiqkr6xkw3jqqem4
   zod: 3.23.8
+  zod-validation-error: 3.4.0_zod@3.23.8
 
 devDependencies:
   '@types/node': 20.17.9
@@ -3284,6 +3286,15 @@ packages:
   /xtend/4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
+    dev: false
+
+  /zod-validation-error/3.4.0_zod@3.23.8:
+    resolution: {integrity: sha512-ZOPR9SVY6Pb2qqO5XHt+MkkTRxGXb4EVtnjc9JpXUOtUB1T9Ru7mZOT361AN3MsetVe7R0a1KZshJDZdgp9miQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      zod: ^3.18.0
+    dependencies:
+      zod: 3.23.8
     dev: false
 
   /zod/3.23.8:

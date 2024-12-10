@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { prisma } from '../lib/prisma';
 import { z } from "zod";
+import { successResponse, errorHandler } from "../lib/apiUtils"; // 引入新的工具模块
 
 const router = new Hono();
 
@@ -31,27 +32,8 @@ interface ApiResponse<T> {
 }
 
 // 统一的错误处理中间件
-const errorHandler = (error, c) => {
-  console.error("Error:", error);
-  let response: ApiResponse<null> = {
-    success: false,
-    message: "An error occurred",
-  };
-
-  if (error instanceof z.ZodError) {
-    response.message = error.errors.map((e) => e.message).join(", ");
-    return c.json(response, 400); // Zod 验证错误
-  }
-  if (error.code === "P2002") {
-    response.message = "Wallet address already exists";
-    return c.json(response, 400);
-  }
-  if (error.code === "P2025") {
-    response.message = "Wallet not found";
-    return c.json(response, 404);
-  }
-  response.message = "Failed to create wallet";
-  return c.json(response, 500);
+const errorHandlerMiddleware = (error, c) => {
+  return errorHandler(error, c);
 };
 
 // 创建钱包
@@ -71,12 +53,9 @@ router.post("/", async (c) => {
       },
     });
 
-    return c.json(
-      { success: true, message: "Wallet created successfully", data: wallet },
-      200
-    ); // 201 Created
+    return successResponse(c, "Wallet created successfully", wallet, 201); // 201 Created
   } catch (error) {
-    return errorHandler(error, c); // 使用统一的错误处理
+    return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
 });
 
@@ -120,14 +99,9 @@ router.get("/", async (c) => {
       };
     });
 
-    return c.json({
-      success: true,
-      message: "Wallets fetched successfully",
-      data: walletsWithStats,
-    });
+    return successResponse(c, "Wallets fetched successfully", walletsWithStats);
   } catch (error) {
-    console.error("Error fetching wallets:", error);
-    return errorHandler(error, c);
+    return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
 });
 
@@ -156,7 +130,7 @@ router.get("/:address", async (c) => {
     });
 
     if (!wallet) {
-      return errorHandler({ code: "P2025" }, c);
+      return errorHandlerMiddleware({ code: "P2025" }, c);
     }
 
     // 处理统计数据
@@ -175,14 +149,9 @@ router.get("/:address", async (c) => {
       _count: undefined,
     };
 
-    return c.json({
-      success: true,
-      message: "Wallet fetched successfully",
-      data: walletWithStats,
-    });
+    return successResponse(c, "Wallet fetched successfully", walletWithStats);
   } catch (error) {
-    console.error("Error fetching wallet:", error);
-    return errorHandler(error, c);
+    return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
 });
 
@@ -218,13 +187,9 @@ router.put("/:address", async (c) => {
       data: updateData,
     });
 
-    return c.json({
-      success: true,
-      message: "Wallet updated successfully",
-      data: wallet,
-    });
+    return successResponse(c, "Wallet updated successfully", wallet);
   } catch (error) {
-    return errorHandler(error, c); // 使用统一的错误处理
+    return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
 });
 
@@ -239,10 +204,9 @@ router.delete("/:address", async (c) => {
       },
     });
 
-    return c.json({ success: true, message: "Wallet deleted successfully" });
+    return successResponse(c, "Wallet deleted successfully", wallet);
   } catch (error) {
-    console.error("Error deleting wallet:", error);
-    return errorHandler(error, c);
+    return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
 });
 
