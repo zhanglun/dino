@@ -6,7 +6,7 @@ describe("API 路由测试", () => {
     const res = await app.request("/api/health");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({
+    expect(await res.json()).toEqual({
       status: "ok",
     });
   });

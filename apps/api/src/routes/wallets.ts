@@ -7,6 +7,13 @@ const router = new Hono();
 router.post('/', async (c) => {
   try {
     const { address, name, color, emoji } = await c.req.json();
+    console.log(
+      "🚀 ~ file: wallets.ts:10 ~ router.post ~ address, name, color, emoji:",
+      address,
+      name,
+      color,
+      emoji
+    );
     
     const wallet = await prisma.wallet.create({
       data: {

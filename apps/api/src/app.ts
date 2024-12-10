@@ -19,6 +19,6 @@ app.route("/api/assets", assetsRouter);
 app.route("/api/history", historyRouter);
 
 // 健康检查
-app.get("/health", (c) => c.json({ status: "ok" }));
+app.get("/api/health", (c) => c.json({ status: "ok" }));
 
 export { app };
