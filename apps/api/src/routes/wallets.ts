@@ -22,24 +22,36 @@ const updateSchema = z.object({
   emoji: z.string().optional(),
 });
 
+// 统一的错误响应格式
+interface ApiErrorResponse {
+  success: boolean;
+  message: string;
+  errorCode?: string;
+  details?: string;
+}
+
 // 统一的错误处理中间件
 const errorHandler = (error, c) => {
   console.error("Error:", error);
+  let response: ApiErrorResponse = {
+    success: false,
+    message: "An error occurred",
+  };
+
   if (error instanceof z.ZodError) {
-    return c.json(
-      { error: error.errors.map((e) => e.message).join(", ") },
-      400
-    ); // Zod 验证错误
+    response.message = error.errors.map((e) => e.message).join(", ");
+    return c.json(response, 400); // Zod 验证错误
   }
   if (error.code === "P2002") {
-    // Prisma 唯一约束违反
-    return c.json({ error: "Wallet address already exists" }, 400);
+    response.message = "Wallet address already exists";
+    return c.json(response, 400);
   }
   if (error.code === "P2025") {
-    // Prisma 记录不存在
-    return c.json({ error: "Wallet not found" }, 404);
+    response.message = "Wallet not found";
+    return c.json(response, 404);
   }
-  return c.json({ error: "Failed to create wallet" }, 500);
+  response.message = "Failed to create wallet";
+  return c.json(response, 500);
 };
 
 // 创建钱包
@@ -50,14 +62,6 @@ router.post("/", async (c) => {
     // 输入验证
     walletSchema.parse({ address, name, color, emoji });
 
-    console.log(
-      "🚀 ~ file: wallets.ts:10 ~ router.post ~ address, name, color, emoji:",
-      address,
-      name,
-      color,
-      emoji
-    );
-
     const wallet = await prisma.wallet.create({
       data: {
         address,
@@ -67,7 +71,7 @@ router.post("/", async (c) => {
       },
     });
 
-    return c.json(wallet, 201); // 201 Created
+    return c.json({ success: true, wallet }, 200); // 201 Created
   } catch (error) {
     return errorHandler(error, c); // 使用统一的错误处理
   }
@@ -113,10 +117,10 @@ router.get("/", async (c) => {
       };
     });
 
-    return c.json(walletsWithStats);
+    return c.json({ success: true, wallets: walletsWithStats });
   } catch (error) {
     console.error("Error fetching wallets:", error);
-    return c.json({ error: "Failed to fetch wallets" }, 500);
+    return errorHandler(error, c);
   }
 });
 
@@ -145,7 +149,7 @@ router.get("/:address", async (c) => {
     });
 
     if (!wallet) {
-      return c.json({ error: "Wallet not found" }, 404);
+      return errorHandler({ code: "P2025" }, c);
     }
 
     // 处理统计数据
@@ -164,10 +168,10 @@ router.get("/:address", async (c) => {
       _count: undefined,
     };
 
-    return c.json(walletWithStats);
+    return c.json({ success: true, wallet: walletWithStats });
   } catch (error) {
     console.error("Error fetching wallet:", error);
-    return c.json({ error: "Failed to fetch wallet" }, 500);
+    return errorHandler(error, c);
   }
 });
 
@@ -187,7 +191,13 @@ router.put("/:address", async (c) => {
       .reduce((obj, key) => ({ ...obj, [key]: updates[key] }), {});
 
     if (Object.keys(updateData).length === 0) {
-      return c.json({ error: "No valid fields to update" }, 400);
+      return c.json(
+        {
+          success: false,
+          message: "No valid fields to update",
+        } as ApiErrorResponse,
+        400
+      );
     }
 
     const wallet = await prisma.wallet.update({
@@ -197,7 +207,7 @@ router.put("/:address", async (c) => {
       data: updateData,
     });
 
-    return c.json(wallet);
+    return c.json({ success: true, wallet });
   } catch (error) {
     return errorHandler(error, c); // 使用统一的错误处理
   }
@@ -214,10 +224,10 @@ router.delete("/:address", async (c) => {
       },
     });
 
-    return c.json({ message: "Wallet deleted successfully" });
+    return c.json({ success: true, message: "Wallet deleted successfully" });
   } catch (error) {
     console.error("Error deleting wallet:", error);
-    return c.json({ error: "Failed to delete wallet" }, 500);
+    return errorHandler(error, c);
   }
 });
 
