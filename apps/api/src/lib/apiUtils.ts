@@ -1,6 +1,6 @@
-import { z, ZodIssue } from "zod";
+import { Context } from "hono";
+import { z } from "zod";
 import { fromError } from "zod-validation-error";
-import { Response } from "hono";
 
 // 统一的返回数据格式
 export interface ApiResponse<T> {
@@ -11,7 +11,7 @@ export interface ApiResponse<T> {
 }
 
 // 统一的错误处理中间件
-export const errorHandler = (error: any, c: Response) => {
+export const errorHandler = (error: any, c: Context) => {
   let response: ApiResponse<null> = {
     success: false,
     message: "An error occurred",
@@ -36,7 +36,7 @@ export const errorHandler = (error: any, c: Response) => {
 
 // 统一的成功响应格式
 export const successResponse = <T>(
-  c: Response,
+  c: Context,
   message: string,
   data: T,
   status: number = 200
