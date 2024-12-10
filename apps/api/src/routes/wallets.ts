@@ -22,18 +22,18 @@ const updateSchema = z.object({
   emoji: z.string().optional(),
 });
 
-// 统一的错误响应格式
-interface ApiErrorResponse {
+// 统一的返回数据格式
+interface ApiResponse<T> {
   success: boolean;
   message: string;
-  errorCode?: string;
-  details?: string;
+  data?: T;
+  error?: string;
 }
 
 // 统一的错误处理中间件
 const errorHandler = (error, c) => {
   console.error("Error:", error);
-  let response: ApiErrorResponse = {
+  let response: ApiResponse<null> = {
     success: false,
     message: "An error occurred",
   };
@@ -71,7 +71,10 @@ router.post("/", async (c) => {
       },
     });
 
-    return c.json({ success: true, wallet }, 200); // 201 Created
+    return c.json(
+      { success: true, message: "Wallet created successfully", data: wallet },
+      200
+    ); // 201 Created
   } catch (error) {
     return errorHandler(error, c); // 使用统一的错误处理
   }
@@ -117,7 +120,11 @@ router.get("/", async (c) => {
       };
     });
 
-    return c.json({ success: true, wallets: walletsWithStats });
+    return c.json({
+      success: true,
+      message: "Wallets fetched successfully",
+      data: walletsWithStats,
+    });
   } catch (error) {
     console.error("Error fetching wallets:", error);
     return errorHandler(error, c);
@@ -168,7 +175,11 @@ router.get("/:address", async (c) => {
       _count: undefined,
     };
 
-    return c.json({ success: true, wallet: walletWithStats });
+    return c.json({
+      success: true,
+      message: "Wallet fetched successfully",
+      data: walletWithStats,
+    });
   } catch (error) {
     console.error("Error fetching wallet:", error);
     return errorHandler(error, c);
@@ -195,7 +206,7 @@ router.put("/:address", async (c) => {
         {
           success: false,
           message: "No valid fields to update",
-        } as ApiErrorResponse,
+        } as ApiResponse<null>,
         400
       );
     }
@@ -207,7 +218,11 @@ router.put("/:address", async (c) => {
       data: updateData,
     });
 
-    return c.json({ success: true, wallet });
+    return c.json({
+      success: true,
+      message: "Wallet updated successfully",
+      data: wallet,
+    });
   } catch (error) {
     return errorHandler(error, c); // 使用统一的错误处理
   }
