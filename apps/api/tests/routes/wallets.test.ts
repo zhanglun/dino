@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { app } from "../../src/app";
 import Web3 from "web3";
+import exp from "constants";
 
 const web3 = new Web3();
 
@@ -13,32 +14,32 @@ describe("Wallets API", () => {
     testAddress = account.address;
   });
 
-  //   it("应能成功添加钱包", async () => {
-  //     const res = await app.request("/api/wallets", {
-  //       method: "POST",
-  //       body: JSON.stringify({
-  //         address: testAddress,
-  //         name: "My Wallet",
-  //         color: "#6B7280",
-  //         emoji: "fluent-emoji:beaming-face-with-smiling-eyes",
-  //       }),
-  //       headers: new Headers({ "Content-Type": "application/json" }),
-  //     });
-  //     expect(res.status).toBe(201);
-  //     expect(await res.json()).toEqual({
-  //       success: true,
-  //       message: "Wallet created successfully",
-  //       data: {
-  //         id: expect.any(Number),
-  //         name: "My Wallet",
-  //         address: testAddress,
-  //         color: "#6B7280",
-  //         emoji: "fluent-emoji:beaming-face-with-smiling-eyes",
-  //         createdAt: expect.any(String),
-  //         updatedAt: expect.any(String),
-  //       },
-  //     });
-  //   });
+  it("应能成功添加钱包", async () => {
+    const res = await app.request("/api/wallets", {
+      method: "POST",
+      body: JSON.stringify({
+        address: testAddress,
+        name: "My Wallet",
+        color: "#6B7280",
+        emoji: "fluent-emoji:beaming-face-with-smiling-eyes",
+      }),
+      headers: new Headers({ "Content-Type": "application/json" }),
+    });
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({
+      success: true,
+      message: "Wallet created successfully",
+      data: {
+        id: expect.any(Number),
+        name: "My Wallet",
+        address: testAddress,
+        color: "#6B7280",
+        emoji: "fluent-emoji:beaming-face-with-smiling-eyes",
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+      },
+    });
+  });
 
   it("添加钱包时缺少Address字段应返回 400", async () => {
     const response = await app.request("/api/wallets", {
@@ -58,34 +59,21 @@ describe("Wallets API", () => {
     });
   });
 
-  // it("应能成功获取钱包列表", async () => {
-  //   const res = await app.request("/api/wallets", {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       name: "My Wallet",
-  //       address: testAddress,
-  //     }),
-  //     headers: new Headers({ "Content-Type": "application/json" }),
-  //   });
+  it("应能成功获取钱包列表", async () => {
+    const res = await app.request("/api/wallets");
 
-  //   expect(res.status).toBe(200);
-  //   expect(res.body).toEqual({
-  //     id: expect.any(Number),
-  //     name: "My Wallet",
-  //     address: testAddress,
-  //   });
-
-  //   const res2 = await app.request("/api/wallets");
-
-  //   expect(res2.status).toBe(200);
-
-  //   expect(res2.body).toEqual(
-  //     expect.arrayContaining([
-  //       expect.objectContaining({
-  //         name: "My Wallet",
-  //         address: testAddress,
-  //       }),
-  //     ])
-  //   );
-  // });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      success: true,
+      message: "Wallets fetched successfully",
+      data: expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String), // 允许名称为任意字符串
+          address: expect.any(String), // 允许地址为任意字符串
+          color: expect.any(String), // 允许颜色为任意字符串
+          emoji: expect.any(String), // 允许 emoji 为任意字符串
+        }),
+      ]),
+    });
+  });
 });
