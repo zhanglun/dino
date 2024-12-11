@@ -36,10 +36,37 @@ const errorHandlerMiddleware = (error, c) => {
   return errorHandler(error, c);
 };
 
+// 地址验证
+const isValidAddress = (address: string): boolean => {
+  const regex = /^0x[a-fA-F0-9]{40}$/;
+  return regex.test(address);
+};
+
+// 聚合资产数据的函数
+const aggregateAssets = async (address: string) => {
+  // 使用 Etherscan API 获取钱包余额
+  const etherscanResponse = await fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=YOUR_ETHERSCAN_API_KEY`);
+  const etherscanData = await etherscanResponse.json();
+
+  // 检查返回的数据是否有效
+  if (etherscanData.status !== '1') {
+    throw new Error(`Etherscan API error: ${etherscanData.message}`);
+  }
+
+  return {
+    balance: etherscanData.result, // 钱包余额
+  };
+};
+
 // 创建钱包
 router.post("/", async (c) => {
   try {
     const { address, name, color, emoji } = await c.req.json();
+
+    // 验证地址
+    if (!isValidAddress(address)) {
+      return errorHandler({ message: "Invalid wallet address" }, c);
+    }
 
     // 输入验证
     walletSchema.parse({ address, name, color, emoji });
@@ -153,6 +180,16 @@ router.get("/:address", async (c) => {
   } catch (error) {
     return errorHandlerMiddleware(error, c); // 使用统一的错误处理
   }
+});
+
+// 获取聚合资产
+router.get("/:address/assets", async (c) => {
+  const { address } = c.req.params;
+  if (!isValidAddress(address)) {
+    return errorHandler({ message: "Invalid wallet address" }, c);
+  }
+  const assets = await aggregateAssets(address);
+  return successResponse(c, "Assets fetched successfully", assets);
 });
 
 // 更新钱包
