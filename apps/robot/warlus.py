@@ -171,9 +171,11 @@ def confirm_transcation():
   time.sleep(5)
   driver.find_element(By.XPATH, "//button[@type='button' and contains(., 'Approve')]").click()
 
+  #TODO: 验证是否可以交易 需要判断余额或者判断是否二次确认
   print("交易成功")
 
   time.sleep(5)
+  return 1
 
 global_count = 0
 init = True
@@ -188,6 +190,14 @@ def switch_wallet(idx):
   driver.switch_to.window(wallet_float_window)
 
   select_wallet_to_connect(idx);
+
+def stake_warlus():
+  stake_buttons = driver.find_elements(By.XPATH, "//button[contains(., 'Stake')]")
+  idx = random.randint(0, len(stake_buttons) - 1)
+  stake_buttons[idx].click()
+
+  input = driver.find_element(By.CSS_SELECTOR, 'input[type="text"]').send_keys("1")
+  confirm_stake_btn = driver.find_element(By.XPATH, "//button[@type='submit' and contains(., 'Stake')]").click()
 
 
 def interact_with_warlus():
@@ -211,6 +221,11 @@ def interact_with_warlus():
     interact_with_warlus()
   else:
     open_get_wal_modal()
+    time.sleep(3)
+    result = confirm_transcation()
+
+    #TODO: stake warlus
+    stake_warlus()
 
 def start_job():
   global global_count
