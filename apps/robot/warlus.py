@@ -75,6 +75,7 @@ def unlock_wallet():
 driver.switch_to.window(loop_window)
 
 def unlock_all_wallets():
+  global global_wallets
   # 列表中的🔒图标 反查wallet address
   lockers = driver.find_elements(By.CSS_SELECTOR, 'button[data-testid="unlock-account-button"]')
   wallet_count = len(lockers)
@@ -84,8 +85,8 @@ def unlock_all_wallets():
 
   for i, locker in enumerate(lockers):
     print(locker)
-    wallet_id = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div/div/main/div/div[1]/div[2]/div/div[2]/div/div[2]').text
-    print(wallet_id)
+    wallet_id = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div/div/main/div/div[1]/div[2]/div/div[2]/div[2]/div[2]/div').text
+    print('钱包{}解锁中'.format(wallet_id), wallet_id)
     locker.click()
     time.sleep(1)
     input = driver.find_element(By.CSS_SELECTOR, 'input[type="password"]').send_keys("!QAZxsw2#EDC")
@@ -93,6 +94,8 @@ def unlock_all_wallets():
     time.sleep(1)
 
     print("钱包{}解锁成功".format(wallet_id))
+
+    global_wallets.append(wallet_id)
 
   select_wallet_to_connect(0)
 
@@ -165,6 +168,7 @@ def confirm_transcation():
 
 global_count = 0
 init = True
+global_wallets = []
 
 
 def switch_wallet(idx):
