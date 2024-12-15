@@ -102,6 +102,15 @@ def unlock_all_wallets():
 def select_wallet_to_connect(idx):
   wallets = driver.find_elements(By.CSS_SELECTOR, 'div[data-radix-collection-item]')
   print(wallets)
+
+  for wallet in wallets:
+    try:
+      checked = wallet.find_element(By.CSS_SELECTOR, '.text-success')
+      if checked:
+        wallet.click()
+    except:
+      print("没有已经选中的钱包")
+    
   select = wallets[idx]
   select.click()
   connect_button = driver.find_element(By.XPATH, "//button[@type='button' and contains(descendant::text(), 'Connect')]").click()
@@ -183,9 +192,15 @@ def switch_wallet(idx):
 
 def interact_with_warlus():
   global global_count
+  global global_wallets
   global loop_window
 
+  if (global_count >= len(global_wallets)):
+    return
+
   driver.switch_to.window(loop_window)
+
+  time.sleep(5)
   amount = get_ammount_in_warlus()
 
   if float(amount) <= 1:
