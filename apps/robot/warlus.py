@@ -96,6 +96,7 @@ def open_get_wal_modal():
   exchange = driver.find_element(By.XPATH, "//button[@type='submit' and contains(., 'Exchange')]").click() 
 
 
+# 连接钱包，如果已经连接，退出链接，按照钱包顺序连接
 def connect_wallet():
   cnt = 0
 
