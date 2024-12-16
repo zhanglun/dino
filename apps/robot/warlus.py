@@ -109,7 +109,7 @@ def select_wallet_to_connect(idx):
       if checked:
         wallet.click()
     except:
-      print("没有已经选中的钱包")
+      print("没有已经选中的钱包, 那么就让我们选中第一个")
     
   select = wallets[idx]
   select.click()
@@ -212,6 +212,8 @@ def interact_with_warlus():
 
   time.sleep(5)
   amount = get_ammount_in_warlus()
+  
+  print("钱包余额{}".format(amount))
 
   if float(amount) <= 1:
     print("余额不足，切换到下一个钱包")
