@@ -10,24 +10,23 @@ import json
 
 import shared
 
+global_idx = 0
+global_current_wallet = None
+init = True
+global_wallets = []
+target_window = None
+
 account1 = shared.get_chrome_data_dir('account1')
 driver = shared.init_web_driver(account1)
-loop_window = None
-
-driver.get('https://stake.walrus.site/')
-
-# shared.open_new_tab(driver)
-loop_window = driver.window_handles[0]
-# wallet_window = driver.window_handles[1]
 
 def open_warlus():
-  global loop_window
+  global target_window
 
-  if loop_window:
-    driver.switch_to.window(loop_window)
+  if target_window:
+    driver.switch_to.window(target_window)
   else:
     driver.get('https://stake.walrus.site/')
-    loop_window = driver.window_handles[0]
+    target_window = driver.window_handles[0]
 
 # driver.switch_to.window(wallet_window)
 # driver.get("chrome-extension://opcgpfmipidbgpenhmajoajpbobppdil/ui.html#/tokens")
@@ -38,41 +37,12 @@ def unlock_wallet():
   def unlock_it():
     button = driver.find_element(By.XPATH, "//*[@id='root']/div/div[1]/div/div/main/div/button")
     button.click()
-
     input = driver.find_element(By.CSS_SELECTOR, 'input[type="password"]').send_keys("!QAZxsw2#EDC")
-    
     confirm_btn = driver.find_element(By.XPATH, '//*[@id="radix-:ra:"]/div[2]/div/div/button[2]').click()
 
-  cnt = 0
+  unlock_it()
 
-  while cnt < 10:
-    try:
-      unlock_it()
-
-      # time.sleep(1)
-      # switch = driver.find_element(By.XPATH, '//*[@id="root"]/div/div[1]/div/div/main/div/div[1]/div[3]/button').click()
-
-      # wallets = driver.find_element(By.CLASS_NAME, 'div[id="radix-:r9:"]>div>div')
-      
-      # print(wallets)
-      # print("还有共有{}个钱包需要解锁".format(len(wallets)))
-      
-      # for wallet in wallets:
-      #   wallet.click() 
-      #   unlock_it()
-      #   print('钱包{}解锁成功'.format(wallet.text))
-      #   time.sleep(1)
-      return -1
-
-    except:
-      time.sleep(2)
-      cnt += 1
-
-  return -1
-
-# unlock_wallet()
-
-driver.switch_to.window(loop_window)
+# driver.switch_to.window(target_window)
 
 def unlock_all_wallets():
   global global_wallets
@@ -97,7 +67,7 @@ def unlock_all_wallets():
 
     global_wallets.append(wallet_id)
 
-  select_wallet_to_connect(0)
+  driver.close()
 
 def select_wallet_to_connect(idx):
   wallets = driver.find_elements(By.CSS_SELECTOR, 'div[data-radix-collection-item]')
@@ -121,7 +91,7 @@ def cache_wallets():
   return 1
 
 def open_get_wal_modal():
-  driver.switch_to.window(loop_window)
+  driver.switch_to.window(target_window)
   print("开始打开质押wal的窗口")
 
   button = driver.find_element(By.CSS_SELECTOR, '#root > div > header > ul > li:first-child')
@@ -129,6 +99,12 @@ def open_get_wal_modal():
   time.sleep(1)
   input = driver.find_element(By.CSS_SELECTOR, 'input[type="text"]').send_keys("1")
   exchange = driver.find_element(By.XPATH, "//button[@type='submit' and contains(., 'Exchange')]").click() 
+
+def disconnect_current_wallet():
+  print("断开当前钱包 {}".format(global_current_wallet))
+  switch_button = driver.find_element(By.CSS_SELECTOR, "#root > div > header > ul > li:last-child")
+  switch_button.click()
+  driver.find_element(By.XPATH, "//button[@data-radix-collection-item and text()='Disconnect']").click()
 
 # 连接钱包，如果已经连接，退出链接，按照钱包顺序连接
 def connect_wallet():
@@ -142,22 +118,11 @@ def connect_wallet():
     select_sui_button = driver.find_element(By.XPATH, "//button[starts-with(@class, 'WalletListItem_walletItem') and contains(., 'Sui Wallet')]").click()
     
   else:
-    switch_button.click()
-    driver.find_element(By.XPATH, "//button[@data-radix-collection-item and text()='Disconnect']").click()
-    # TODO: disconnet wallet, unlock all wallets and then connect wallet
-    print("TODO -> disconnet wallet, unlock all wallets and then connect wallet")
+    disconnect_current_wallet()
+
+    time.sleep(3)
 
     connect_wallet()
-
-print(driver.window_handles)
-
-wallet_float_window = driver.window_handles[-1]
-
-driver.switch_to.window(wallet_float_window)
-
-time.sleep(2)
-
-# unlock_all_wallets()
 
 def get_ammount_in_warlus():
   amount = driver.find_element(By.CSS_SELECTOR, "#root > div > header > ul > li:nth-child(2) span:first-child").text
@@ -176,11 +141,6 @@ def confirm_transcation():
 
   time.sleep(5)
   return 1
-
-global_count = 0
-init = True
-global_wallets = []
-
 
 def switch_wallet(idx):
   connect_wallet()
@@ -201,14 +161,19 @@ def stake_warlus():
 
 
 def interact_with_warlus():
-  global global_count
+  global global_idx
   global global_wallets
-  global loop_window
+  global target_window
 
-  if (global_count >= len(global_wallets)):
+  print("====> 开始和warlus页面交互")
+  print("====> 第{}个钱包开始, 钱包地址: {}".format(global_idx, global_wallets[global_idx]))
+
+  if (global_idx >= len(global_wallets)):
+    print("所有钱包都交互完毕，退出")
+
     return
 
-  driver.switch_to.window(loop_window)
+  driver.switch_to.window(target_window)
 
   time.sleep(5)
   amount = get_ammount_in_warlus()
@@ -217,8 +182,8 @@ def interact_with_warlus():
 
   if float(amount) <= 1:
     print("余额不足，切换到下一个钱包")
-    switch_wallet(global_count)
-    global_count += 1
+    switch_wallet(global_idx)
+    global_idx += 1
     time.sleep(3)
     interact_with_warlus()
   else:
@@ -230,8 +195,8 @@ def interact_with_warlus():
     stake_warlus()
 
 def start_job():
-  global global_count
-  global loop_window
+  global global_idx
+  global target_window
 
   # 打开网页
   open_warlus()
@@ -239,24 +204,19 @@ def start_job():
   connect_wallet()
 
   time.sleep(5)
+
   wallet_float_window = driver.window_handles[-1]
   driver.switch_to.window(wallet_float_window)
+
   unlock_all_wallets()
 
-  global_count += 1
+  driver.switch_to.window(target_window)
 
-  time.sleep(5)
+  connect_wallet()
+
   print("等待warlus加载完成")
 
   interact_with_warlus()
-  
-  # 如果连接了钱包，先断开，然后获取到钱包列表
-  # 3. 循环执行交互
-  # 3.1 链接钱包
-  # 3.2 打开质押wal的窗口
-  # 3.3 确认交易 
-  # 3.4 交易成功
-  # 3.5 连接下一个钱包 ...
 
   return 1
 
