@@ -208,16 +208,15 @@ def interact_with_warlus():
     wallets = dropdown_menu.find_elements(By.CSS_SELECTOR, 'div[data-radix-collection-item]')
     
     wallets[idx].click()
+  if (global_idx >= len(global_wallets)):
+    print("所有钱包都交互完毕，退出")
+
+    return
 
   print("====> 开始和warlus页面交互")
   print("====> 第{}个钱包开始, 钱包地址: {}".format(global_idx, global_wallets[global_idx]))
 
   select_next(global_idx)
-
-  if (global_idx >= len(global_wallets)):
-    print("所有钱包都交互完毕，退出")
-
-    return
   
   time.sleep(2)
 
