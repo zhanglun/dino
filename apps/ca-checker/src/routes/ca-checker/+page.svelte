@@ -1,23 +1,20 @@
 <script lang="ts">
   import welcome from '$lib/images/svelte-welcome.webp';
   import welcomeFallback from '$lib/images/svelte-welcome.png';
-  import { getModalStore, type ModalSettings, type ModalComponent } from '@skeletonlabs/skeleton';
-  import AddWalletModal from '../../components/modals/AddWalletModal.svelte';
 
-  const modalStore = getModalStore();
+  let inputElem: HTMLInputElement;
 
-  function toggleDialog() {
-    const modalComponent: ModalComponent = { ref: AddWalletModal };
+  function handleSearch(e: KeyboardEvent) {
+    const { key } = e;
 
-    const modal: ModalSettings = {
-      type: 'component',
-      component: modalComponent,
-      response: (result) => {
-        console.log(result);
-      }
-    };
-    modalStore.trigger(modal);
+    if (key === 'Enter') {
+      console.log('🚀 ~ file: +page.svelte:8 ~ handleSearch ~ key:', key);
+    }
   }
+
+  $effect(() => {
+    inputElem.focus();
+  });
 </script>
 
 <section>
@@ -31,26 +28,15 @@
       Track profits, losses and valuation all in one place.
     </p>
   </div>
-  <div class="w-[800px] m-auto">
-    <div
-      on:click={toggleDialog}
-      on:keydown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          toggleDialog();
-        }
-      }}
-      class="add-address"
-      tabindex="0"
-      aria-label="Add Your Wallet"
-      role="button"
-    >
-      <iconify-icon icon="fluent-color:add-circle-32" height="32"></iconify-icon>
-      <div>
-        <div class="font-bold">Add Your Wallet</div>
-        <div class="text-surface-400 text-sm">
-          Simply enter your wallet address (no signature needed!) and we'll sync it right away.
-        </div>
-      </div>
+  <div class="m-auto w-[800px]">
+    <div>
+      <input
+        bind:this={inputElem}
+        class="input"
+        type="text"
+        placeholder="Search"
+        onkeyup={handleSearch}
+      />
     </div>
   </div>
 </section>
