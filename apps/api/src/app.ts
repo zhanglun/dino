@@ -4,6 +4,7 @@ import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { assetsRouter } from "./routes/assets";
 import { historyRouter } from "./routes/history";
+import { checkerRouter } from "./routes/checker";
 import { walletsRouter } from "./routes/wallets";
 
 const app = new Hono();
@@ -17,6 +18,7 @@ app.use("*", cors());
 app.route("/api/wallets", walletsRouter);
 app.route("/api/assets", assetsRouter);
 app.route("/api/history", historyRouter);
+app.route("/api/checker", checkerRouter);
 
 // 健康检查
 app.get("/api/health", (c) => c.json({ status: "ok" }));
