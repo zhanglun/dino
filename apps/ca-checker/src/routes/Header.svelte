@@ -25,6 +25,9 @@
       <li aria-current={$page.url.pathname === '/portfolio' ? 'page' : undefined}>
         <a href="/portfolio">Portfolio</a>
       </li>
+      <li aria-current={$page.url.pathname === '/ca-checker' ? 'page' : undefined}>
+        <a href="/ca-checker">Checker</a>
+      </li>
       <li aria-current={$page.url.pathname.startsWith('/sverdle') ? 'page' : undefined}>
         <a href="/sverdle">Sverdle</a>
       </li>
