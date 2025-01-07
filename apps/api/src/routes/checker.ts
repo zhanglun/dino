@@ -5,15 +5,16 @@ const router = new Hono();
 
 router.get("/", async (c) => {
   // GET 请求示例
-  const getRequestPath = "/api/v5/dex/aggregator/quote";
-  const getParams = {
-    chainId: 42161,
-    amount: 1000000000000,
-    toTokenAddress: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-    fromTokenAddress: "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+  const getRequestPath = "/api/v5/wallet/token/current-price";
+  const data = {
+    chainIndex: "1",
+    tokenAddress: "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
   };
-  
-  const result = await sendGetRequest(getRequestPath, getParams);
+
+  const result = await sendPostRequest(getRequestPath, data);
+  console.log("🚀 ~ file: checker.ts:17 ~ router.get ~ result:", result);
+
+  return c.json(result);
 
   // // POST 请求示例
   // const postRequestPath = "/api/v5/mktplace/nft/ordinals/listings";
@@ -25,3 +26,12 @@ router.get("/", async (c) => {
 });
 
 export { router as checkerRouter };
+
+router.get("/chains", async (c) => {
+  const url = "/api/v5/wallet/chain/supported-chains";
+  const result = await sendGetRequest(url) as Promise<Response>;
+
+  console.log("🚀 ~ file: checker.ts:33 ~ router.get ~ result:", result)
+
+  return c.json(result);
+});
