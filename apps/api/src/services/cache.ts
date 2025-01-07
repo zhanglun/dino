@@ -13,6 +13,15 @@ export class CacheService {
     });
   }
 
+  async setCachedChains(data: any) {
+    await this.redis.setex('chains', 300, JSON.stringify(data)); // 5分钟缓存
+  }
+
+  async getCachedChains() {
+    const data = await this.redis.get('chains');
+    return data ? JSON.parse(data) : null;
+  }
+
   async cacheAssets(address: string, data: any) {
     const key = `assets:${address.toLowerCase()}`;
     await this.redis.setex(key, 300, JSON.stringify(data)); // 5分钟缓存

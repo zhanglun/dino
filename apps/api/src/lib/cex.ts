@@ -110,5 +110,5 @@ export async function sendPostRequest(request_path, params) {
 
   const url = `https://www.okx.com${request_path}`;
 
-  return fetch(url, options).then((res) => res.json());
+  return axios.post(url, params, options);
 }

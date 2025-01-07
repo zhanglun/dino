@@ -1,18 +1,21 @@
 import { Hono } from "hono";
 import { sendGetRequest, sendPostRequest } from "../lib/cex";
+import { CacheService } from "../services/cache";
 
 const router = new Hono();
+const cacheService = new CacheService();
 
 router.get("/", async (c) => {
   // GET 请求示例
-  const getRequestPath = "/api/v5/wallet/token/current-price";
-  const data = {
-    chainIndex: "1",
-    tokenAddress: "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
-  };
+  const url = "/api/v5/wallet/token/current-price";
+  const body = [
+    {
+      chainIndex: 501,
+      tokenAddress: "GM5MBekSureTyKu4iJ5NukeHVgXVWbt4kQwz9rupump",
+    },
+  ];
 
-  const result = await sendPostRequest(getRequestPath, data);
-  console.log("🚀 ~ file: checker.ts:17 ~ router.get ~ result:", result);
+  const result = await sendPostRequest(url, body);
 
   return c.json(result);
 
@@ -28,10 +31,32 @@ router.get("/", async (c) => {
 export { router as checkerRouter };
 
 router.get("/chains", async (c) => {
-  const url = "/api/v5/wallet/chain/supported-chains";
-  const result = await sendGetRequest(url) as Promise<Response>;
+  try {
+    const cachedChains = await cacheService.getCachedChains();
 
-  console.log("🚀 ~ file: checker.ts:33 ~ router.get ~ result:", result)
+    if (cachedChains) {
+      return c.json(cachedChains);
+    }
+    const url = "/api/v5/wallet/chain/supported-chains";
+    const { data } = await sendGetRequest(url);
+
+    const result = await cacheService.setCachedChains(data);
+
+    return c.json(data);
+  } catch (error) {
+    console.error("Error fetching assets:", error);
+    return c.json({ error: "Failed to fetch assets" }, 500);
+  }
+});
+
+router.get("/tokens", async (c) => {
+  const url = "/api/v5/wallet/token/token-detail";
+  const { chain, address } = c.req.query();
+
+  const result = await sendGetRequest(url, {
+    chain,
+    address,
+  });
 
   return c.json(result);
 });
