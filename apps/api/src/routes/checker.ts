@@ -20,14 +20,6 @@ router.get("/", async (c) => {
   const result = await sendPostRequest(url, body);
 
   return c.json(result);
-
-  // // POST 请求示例
-  // const postRequestPath = "/api/v5/mktplace/nft/ordinals/listings";
-  // const postParams = {
-  //   slug: "sats",
-  // };
-  // sendPostRequest(postRequestPath, postParams);
-  // return c.json({ status: "ok" });
 });
 
 export { router as checkerRouter };
@@ -46,18 +38,14 @@ router.get("/chains", async (c) => {
 });
 
 router.get("/tokens", async (c) => {
-  const url = "/api/v5/wallet/token/token-detail";
   const { chain, address } = c.req.query();
   const chains = await okxService.getChains();
   const matched = chains.find((c) => c.shortName.toLowerCase() === chain);
 
   if (matched) {
-    const { chainIndex } = matched;  
+    const { chainIndex } = matched;
 
-    const result = await sendGetRequest(url, {
-      chainIndex,
-      tokenAddress: address,
-    });
+    const result = await okxService.getTokenDetail(chainIndex, address);
 
     return c.json(result);
   } else {

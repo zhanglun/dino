@@ -20,4 +20,23 @@ export class OKXService {
 
     return data;
   }
+
+  async getTokenDetail(chainIndex: string, address: string) {
+    const cachedDetail = await this.cacheService.getCachedTokenDetail( address);
+
+    if (cachedDetail) {
+      console.log("🚀 ~ file: okx.ts:28 ~ OKXService ~ getTokenDetail ~ cachedDetail: FROM CACHE")
+      return cachedDetail;
+    }
+
+    const url = "/api/v5/wallet/token/token-detail";
+    const { data } = await sendGetRequest(url, {
+      chainIndex,
+      tokenAddress: address,
+    });
+
+    await this.cacheService.setCachedTokenDetail(address, data)
+
+    return data;
+  }
 }

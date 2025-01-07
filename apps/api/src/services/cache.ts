@@ -24,6 +24,18 @@ export class CacheService {
     return data ? JSON.parse(data) : null;
   }
 
+  async setCachedTokenDetail(address: string, data: any) {
+    const key = `address:${address.toLowerCase()}`;
+    await this.redis.setex(key, 300, JSON.stringify(data)); // 5分钟缓存
+  }
+
+  async getCachedTokenDetail(address: string) {
+    const key = `address:${address.toLowerCase()}`;
+    const data = await this.redis.get(key);
+
+    return data ? JSON.parse(data) : null;
+  }
+
   async cacheAssets(address: string, data: any) {
     const key = `assets:${address.toLowerCase()}`;
     await this.redis.setex(key, 300, JSON.stringify(data)); // 5分钟缓存
