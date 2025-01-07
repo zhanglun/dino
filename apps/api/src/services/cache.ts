@@ -1,24 +1,26 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
+
+const redis = new Redis({
+  host: process.env.REDIS_URL,
+  port: parseInt(process.env.REDIS_PORT || "6379"),
+  username: process.env.REDIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+});
 
 export class CacheService {
+  private static instance: CacheService;
   private redis: Redis;
 
   constructor() {
-    console.log('host', process.env.REDIS_URL);
-    this.redis = new Redis({
-      host: process.env.REDIS_URL,
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      username: process.env.REDIS_USERNAME,
-      password: process.env.REDIS_PASSWORD,
-    });
+    this.redis = redis;
   }
 
   async setCachedChains(data: any) {
-    await this.redis.setex('chains', 300, JSON.stringify(data)); // 5分钟缓存
+    await this.redis.setex("chains", 300, JSON.stringify(data)); // 5分钟缓存
   }
 
   async getCachedChains() {
-    const data = await this.redis.get('chains');
+    const data = await this.redis.get("chains");
     return data ? JSON.parse(data) : null;
   }
 

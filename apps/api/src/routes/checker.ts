@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import { sendGetRequest, sendPostRequest } from "../lib/cex";
 import { CacheService } from "../services/cache";
+import { OKXService } from "../services/okx";
 
 const router = new Hono();
 const cacheService = new CacheService();
+const okxService = new OKXService();
 
 router.get("/", async (c) => {
   // GET 请求示例
@@ -32,15 +34,9 @@ export { router as checkerRouter };
 
 router.get("/chains", async (c) => {
   try {
-    const cachedChains = await cacheService.getCachedChains();
+    const data = await okxService.getChains();
 
-    if (cachedChains) {
-      return c.json(cachedChains);
-    }
-    const url = "/api/v5/wallet/chain/supported-chains";
-    const { data } = await sendGetRequest(url);
-
-    const result = await cacheService.setCachedChains(data);
+    await cacheService.setCachedChains(data);
 
     return c.json(data);
   } catch (error) {
@@ -52,11 +48,19 @@ router.get("/chains", async (c) => {
 router.get("/tokens", async (c) => {
   const url = "/api/v5/wallet/token/token-detail";
   const { chain, address } = c.req.query();
+  const chains = await okxService.getChains();
+  const matched = chains.find((c) => c.shortName.toLowerCase() === chain);
 
-  const result = await sendGetRequest(url, {
-    chain,
-    address,
-  });
+  if (matched) {
+    const { chainIndex } = matched;  
 
-  return c.json(result);
+    const result = await sendGetRequest(url, {
+      chainIndex,
+      tokenAddress: address,
+    });
+
+    return c.json(result);
+  } else {
+    return c.json({ error: "Chain not found" }, 404);
+  }
 });
