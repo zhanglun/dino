@@ -7,7 +7,6 @@ axios.interceptors.response.use(function (response) {
   // Do something with response data
   
   return response.data;
-  return response;
 }, function (error) {
   console.log("🚀 ~ file: cex.ts:10 ~ (error:", error)
   // Any status codes that falls outside the range of 2xx cause this function to trigger

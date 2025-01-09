@@ -7,6 +7,9 @@ const router = new Hono();
 const cacheService = new CacheService();
 const okxService = new OKXService();
 
+/**
+ * 当前币价
+ */
 router.get("/", async (c) => {
   // GET 请求示例
   const url = "/api/v5/wallet/token/current-price";
@@ -24,6 +27,9 @@ router.get("/", async (c) => {
 
 export { router as checkerRouter };
 
+/**
+ * 查询支持的链
+ */
 router.get("/chains", async (c) => {
   try {
     const data = await okxService.getChains();
@@ -37,6 +43,9 @@ router.get("/chains", async (c) => {
   }
 });
 
+/**
+ * 查询 token 的详情
+ */
 router.get("/tokens", async (c) => {
   const { chain, address } = c.req.query();
   const chains = await okxService.getChains();
@@ -52,3 +61,17 @@ router.get("/tokens", async (c) => {
     return c.json({ error: "Chain not found" }, 404);
   }
 });
+
+router.get("/tokens/historical-price", async (c) => {
+  const { chain, address } = c.req.query();
+  
+  const result = await okxService.getTokenHistoricalPrice({
+    chainIndex: chain,
+    tokenAddress: address,
+    begin: 1700040600000,
+    limit: 5,
+    period: '5m'
+  });
+
+  return c.json(result)
+})

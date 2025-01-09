@@ -1,6 +1,13 @@
 import { sendGetRequest, sendPostRequest } from "../lib/cex";
 import { CacheService } from "./cache";
 
+export type HisotricalPriceQuery = {
+  chainIndex: string;
+  tokenAddress: string;
+  limit: number,
+  period: string
+}
+
 export class OKXService {
   private cacheService: CacheService;
 
@@ -36,6 +43,15 @@ export class OKXService {
     });
 
     await this.cacheService.setCachedTokenDetail(address, data)
+
+    return data;
+  }
+
+  async getTokenHistoricalPrice(params: HisotricalPriceQuery) {
+    const url = "/api/v5/wallet/token/historical-price";
+    const { data } = await sendGetRequest(url, {
+      ...params,
+    });
 
     return data;
   }
