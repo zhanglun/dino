@@ -1,4 +1,5 @@
 <script lang="ts">
+  import "$lib/firebase";
   import 'iconify-icon';
   import '@fontsource/sn-pro';
   import { initializeStores, Modal, type ModalComponent } from '@skeletonlabs/skeleton';
