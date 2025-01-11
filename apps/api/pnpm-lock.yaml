@@ -6,8 +6,9 @@ specifiers:
   '@prisma/adapter-pg': ^6.0.1
   '@prisma/client': ^6.0.1
   '@solana/web3.js': ^1.98.0
-  '@types/node': ^20.10.4
+  '@types/node': ^20.17.9
   axios: ^1.7.9
+  bip39: ^3.1.0
   crypto-js: ^4.2.0
   ethers: ^6.7.0
   hono: ^3.11.3
@@ -32,6 +33,7 @@ dependencies:
   '@prisma/client': 6.0.1_prisma@6.0.1
   '@solana/web3.js': 1.98.0
   axios: 1.7.9
+  bip39: 3.1.0
   crypto-js: 4.2.0
   ethers: 6.13.4
   hono: 3.12.12
@@ -954,7 +956,7 @@ packages:
     resolution: {integrity: sha512-Th0+9nOV+rQnT39d9rXu24ff+LDtKzGuk8WzRIYAdpIo0Yv7jrWsqkJL2DwZ5vrkNOcNLabktTrLjZEXRCHw3A==}
     dependencies:
       '@moralisweb3/common-core': 2.27.2
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.7.0
     transitivePeerDependencies:
       - debug
     dev: false
@@ -1577,6 +1579,12 @@ packages:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
     dependencies:
       file-uri-to-path: 1.0.0
+    dev: false
+
+  /bip39/3.1.0:
+    resolution: {integrity: sha512-c9kiwdk45Do5GL0vJMe7tS95VjCii65mYAH7DfWl3uW8AVzXKQVUm64i3hzVybBDMp9r7j9iNxR85+ul8MdN/A==}
+    dependencies:
+      '@noble/hashes': 1.7.0
     dev: false
 
   /blakejs/1.2.1:
