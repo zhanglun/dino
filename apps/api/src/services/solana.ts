@@ -30,10 +30,15 @@ export class SolanaService {
     
     // 获取钱包的私钥
     // const privateKey = bs58.encode(keypair.secretKey);
-    // console.log('私钥:', privateKey);
+    const secretKey = keypair.secretKey;
+    const base64SecretKey = Buffer.from(secretKey).toString('base64');
+    console.log('私钥:', keypair.secretKey);
+    console.log('base64SecretKey:', base64SecretKey);
 
     return {
       publicKey,
+      secretKey,
+      base64SecretKey,
       mnemonic
     }
   }
