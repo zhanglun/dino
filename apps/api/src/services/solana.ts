@@ -1,22 +1,22 @@
 import {
-  clusterApiUrl,
   Connection,
   PublicKey,
   Transaction,
   sendAndConfirmTransaction,
   Keypair,
   AccountInfo,
+  createSolanaRpc,
 } from "@solana/web3.js";
 import bip39 from "bip39";
 
 // const RPC_URL = process.env.NODE_ENV === 'development' ? clusterApiUrl("devnet") : clusterApiUrl("mainnet-beta");
-const RPC_URL = clusterApiUrl("devnet");
+const RPC_URL = process.env.SOLANA_RPC_URL;
 
 export class SolanaService {
   private connection: Connection;
 
   constructor() {
-    this.connection = new Connection(RPC_URL, "confirmed");
+    this.connection = createSolanaRpc(RPC_URL); 
   }
 
   async createWallet(): Promise<any> {
