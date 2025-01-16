@@ -1,19 +1,18 @@
 import {
-  Connection,
-  PublicKey,
   Transaction,
-  sendAndConfirmTransaction,
-  Keypair,
-  AccountInfo,
+  generateKeyPairSigner,
+  createKeyPairSignerFromPrivateKeyBytes,
   createSolanaRpc,
+  Rpc,
+  createKeyPairFromPrivateKeyBytes,
 } from "@solana/web3.js";
 import bip39 from "bip39";
 
 // const RPC_URL = process.env.NODE_ENV === 'development' ? clusterApiUrl("devnet") : clusterApiUrl("mainnet-beta");
-const RPC_URL = process.env.SOLANA_RPC_URL;
+const RPC_URL = process.env.SOLANA_RPC_URL as string;
 
 export class SolanaService {
-  private connection: Connection;
+  private connection: Rpc<any>;
 
   constructor() {
     this.connection = createSolanaRpc(RPC_URL); 
@@ -24,34 +23,33 @@ export class SolanaService {
 
     // 从助记词生成种子
     const seed = bip39.mnemonicToSeedSync(mnemonic, "");
+    console.log("🚀 ~ file: solana.ts:28 ~ SolanaService ~ createWallet ~ seed:", seed)
 
-    // 使用种子生成Solana钱包密钥对
-    const keypair = Keypair.fromSeed(seed.slice(0, 32));
+    const { address, keyPair } = await createKeyPairSignerFromPrivateKeyBytes(seed.slice(0, 32), true);
+    console.log("🚀 ~ file: solana.ts:29 ~ SolanaService ~ createWallet ~ keypair:", address)
 
     // 获取钱包的公钥
-    const publicKey = keypair.publicKey.toBase58();
+    const publicKey = keyPair.publicKey;
     console.log(
       "🚀 ~ file: solana.ts:28 ~ SolanaService ~ createWallet ~ publicKey:",
       publicKey
     );
-    console.log(
-      "🚀 ~ file: solana.ts:28 ~ SolanaService ~ createWallet ~ keypair.publicKey:",
-      keypair.publicKey
-    );
 
     // 获取钱包的私钥
     // const privateKey = bs58.encode(keypair.secretKey);
-    const secretKey = keypair.secretKey;
-    const base64SecretKey = Buffer.from(secretKey).toString("base64");
-    // 十六进制编码
-    const hexSecretKey = secretKey.reduce((hexString, byte) => {
-      return hexString + byte.toString(16).padStart(2, "0");
-    }, "");
+    const privateKey = keyPair.privateKey
+    console.log("🚀 ~ file: solana.ts:40 ~ SolanaService ~ createWallet ~ privateKey:", privateKey)
+    // const base64SecretKey = Buffer.from(privateKey).toString("base64");
+    // // 十六进制编码
+    // const hexSecretKey = privateKey.reduce((hexString, byte) => {
+    //   return hexString + byte.toString(16).padStart(2, "0");
+    // }, "");
 
     return {
       publicKey,
-      base64SecretKey,
-      hexSecretKey,
+      privateKey,
+      // base64SecretKey,
+      // hexSecretKey,
       mnemonic,
     };
   }
