@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { SolanaService } from "../../src/services/solana";
-import { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { airdropFactory, isAddress } from "@solana/web3.js";
 
 describe("SolanaService", () => {
   let solanaService: SolanaService;
@@ -21,6 +21,17 @@ describe("SolanaService", () => {
 
     expect(address).toBeDefined();
     expect(mnemonic).toBeDefined();
+
+    expect(isAddress(address)).toBe(true);
+
+    await solanaService.getAirdrop(address);
+    // const airdrop = airdropFactory({ rpc: solanaService.connection, rpcSubscriptions });
+    // const airdropTx = await airdrop({
+    //     commitment: 'processed',
+    //     lamports: lamports(LAMPORTS_PER_SOL),
+    //     recipientAddress: payer.address
+    // });
+    // console.log(`✅ - Airdropped 1 SOL to payer: ${airdropTx}`);
   });
   // it("getAccountBalance", async () => {
   //   // 使用 SolanaService 获取账户余额
