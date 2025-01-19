@@ -44,6 +44,9 @@ export class SolanaService {
       seed.slice(0, 32)
     );
     const { publicKey, privateKey } = keyPair;
+    const exported = await crypto.subtle.exportKey("raw", publicKey);
+    const exportedKeyBuffer = new Uint8Array(exported);
+    console.log("🚀 ~ file: solana.ts:49 ~ SolanaService ~ createWallet ~ exportedKeyBuffer:", exportedKeyBuffer)
 
     return {
       publicKey,
@@ -54,19 +57,27 @@ export class SolanaService {
   }
 
   async getAirdrop(address: Address) {
-    const airdrop = airdropFactory({
-      rpc: this.connection,
-      rpcSubscriptions: this.rpcSubscriptions,
-    });
-    const airdropTx = await airdrop({
-      commitment: "processed",
-      lamports: lamports(LAMPORTS_PER_SOL),
-      recipientAddress: address,
-    });
-    console.log("🚀 ~ file: solana.ts:66 ~ SolanaService ~ getAirdrop ~ airdropTx:", airdropTx)
-    console.log(`✅ - Airdropped 1 SOL to payer: ${airdropTx}`);
+    // const airdrop = airdropFactory({
+    //   rpc: this.connection,
+    //   rpcSubscriptions: this.rpcSubscriptions,
+    // });
+    // const airdropTx = await airdrop({
+    //   commitment: "processed",
+    //   lamports: lamports(LAMPORTS_PER_SOL),
+    //   recipientAddress: address,
+    // });
+    // console.log("🚀 ~ file: solana.ts:66 ~ SolanaService ~ getAirdrop ~ airdropTx:", airdropTx)
+    // console.log(`✅ - Airdropped 1 SOL to payer: ${airdropTx}`);
 
-    return airdropTx;
+    // return airdropTx;
+
+    const tx1 = await this.connection.requestAirdrop(
+      lamports(LAMPORTS_PER_SOL),
+      { commitment: 'processed' }
+  ).send();
+  console.log(`✅ - user1 airdropped 1 SOL using RPC methods`);
+  console.log(`✅ - tx1: ${tx1}`);
+
   }
 
   // async getAccountBalance(publicKey: PublicKey): Promise<number> {
