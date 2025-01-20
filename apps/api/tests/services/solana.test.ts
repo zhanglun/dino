@@ -19,7 +19,6 @@ describe("SolanaService", () => {
     console.log("公钥:", publicKey);
     console.log("私钥:", privateKey);
 
-<<<<<<< HEAD
     // expect(base64SecretKey).toBeDefined();
     expect(mnemonic).toBeDefined();
 
@@ -38,12 +37,6 @@ describe("SolanaService", () => {
   
   // const info = await solanaService.getAccountInfo(regeneratedKeypair.publicKey);
   // console.log("🚀 ~ file: solana.test.ts:39 ~ it ~ info:", info)
-=======
-    expect(address).toBeDefined();
-    expect(mnemonic).toBeDefined();
-
-    expect(isAddress(address)).toBe(true);
->>>>>>> 759078b71251606474d0dff59b034e70088aa456
 
     await solanaService.getAirdrop(address);
     // const airdrop = airdropFactory({ rpc: solanaService.connection, rpcSubscriptions });
