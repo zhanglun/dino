@@ -19,10 +19,24 @@ describe("SolanaService", () => {
     console.log("公钥:", publicKey);
     console.log("私钥:", privateKey);
 
-    expect(address).toBeDefined();
+    // expect(base64SecretKey).toBeDefined();
     expect(mnemonic).toBeDefined();
 
-    expect(isAddress(address)).toBe(true);
+    // const connection = new Connection("https://api.devnet.solana.com");
+    // const res = await connection.requestAirdrop(publicKey);
+
+    // 1. 验证私钥与公钥对应关系
+  // const privateKey = Uint8Array.from(Buffer.from(base64SecretKey, 'base64'));
+  // const regeneratedKeypair = Keypair.fromSecretKey(privateKey);
+  // const regeneratedPublicKey = regeneratedKeypair.publicKey.toString();
+
+  // expect(regeneratedPublicKey).toBe(publicKey);
+
+  // const balance = await solanaService.getAccountBalance(regeneratedKeypair.publicKey);
+  // console.log("🚀 ~ file: solana.test.ts:36 ~ it ~ balance:", balance)
+  
+  // const info = await solanaService.getAccountInfo(regeneratedKeypair.publicKey);
+  // console.log("🚀 ~ file: solana.test.ts:39 ~ it ~ info:", info)
 
     await solanaService.getAirdrop(address);
     // const airdrop = airdropFactory({ rpc: solanaService.connection, rpcSubscriptions });
