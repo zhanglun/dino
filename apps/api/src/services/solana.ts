@@ -1,7 +1,6 @@
 import crypto from "node:crypto";
 import {
   Transaction,
-<<<<<<< HEAD
   generateKeyPairSigner,
   createKeyPairSignerFromPrivateKeyBytes,
   createSolanaRpc,
@@ -15,32 +14,6 @@ const RPC_URL = process.env.SOLANA_RPC_URL as string;
 
 export class SolanaService {
   private connection: Rpc<any>;
-=======
-  createSolanaRpc,
-  createKeyPairSignerFromPrivateKeyBytes,
-  Rpc,
-  devnet,
-  createSolanaRpcSubscriptions,
-  airdropFactory,
-  lamports,
-  Address,
-} from "@solana/web3.js";
-import bip39 from "bip39";
-
-const LAMPORTS_PER_SOL = BigInt(1_000_000_000);
-const DECIMALS = 9;
-const DROP_AMOUNT = 100;
-const RPC_URL = process.env.SOLANA_RPC_URL as string;
-const CLUSTER = "devnet";
-const rpc = createSolanaRpc(devnet(`https://api.${CLUSTER}.solana.com`));
-const rpcSubscriptions = createSolanaRpcSubscriptions(
-  devnet(`wss://api.${CLUSTER}.solana.com`)
-);
-
-export class SolanaService {
-  private connection: any;
-  private rpcSubscriptions: any;
->>>>>>> 759078b71251606474d0dff59b034e70088aa456
 
   constructor() {
     // this.connection = createSolanaRpc(RPC_URL);
@@ -51,7 +24,6 @@ export class SolanaService {
   async createWallet(): Promise<any> {
     const mnemonic = bip39.generateMnemonic();
     const seed = bip39.mnemonicToSeedSync(mnemonic, "");
-<<<<<<< HEAD
     console.log("🚀 ~ file: solana.ts:28 ~ SolanaService ~ createWallet ~ seed:", seed)
 
     const { address, keyPair } = await createKeyPairSignerFromPrivateKeyBytes(seed.slice(0, 32), true);
@@ -73,30 +45,12 @@ export class SolanaService {
     // const hexSecretKey = privateKey.reduce((hexString, byte) => {
     //   return hexString + byte.toString(16).padStart(2, "0");
     // }, "");
-=======
-    console.log(
-      "🚀 ~ file: solana.ts:21 ~ SolanaService ~ createWallet ~ seed:",
-      seed
-    );
-
-    const { address, keyPair } = await createKeyPairSignerFromPrivateKeyBytes(
-      seed.slice(0, 32)
-    );
-    const { publicKey, privateKey } = keyPair;
-    const exported = await crypto.subtle.exportKey("raw", publicKey);
-    const exportedKeyBuffer = new Uint8Array(exported);
-    console.log("🚀 ~ file: solana.ts:49 ~ SolanaService ~ createWallet ~ exportedKeyBuffer:", exportedKeyBuffer)
->>>>>>> 759078b71251606474d0dff59b034e70088aa456
 
     return {
       publicKey,
       privateKey,
-<<<<<<< HEAD
       // base64SecretKey,
       // hexSecretKey,
-=======
-      address,
->>>>>>> 759078b71251606474d0dff59b034e70088aa456
       mnemonic,
     };
   }
