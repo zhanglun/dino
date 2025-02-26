@@ -2,6 +2,7 @@
 node_modules
 venv
 **/cache
+.venv
 __pycache__
 **/data/**
 

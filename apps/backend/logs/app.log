@@ -1,0 +1,9 @@
+2025-02-26 09:52:39,568  asdf - app - INFO - this is logger gggg
+2025-02-26 09:52:44,501  asdf - app - INFO - this is logger gggg
+2025-02-26 09:52:44,673  asdf - app - INFO - this is logger gggg
+2025-02-26 09:53:52,935  asdf - app - INFO - this is logger gggg
+2025-02-26 09:54:03,705  asdf - app - INFO - this is logger gggg
+2025-02-26 09:56:43,785 - app - INFO - this is logger
+2025-02-26 09:56:48,991 - app - INFO - hahahha
+2025-02-26 09:58:12,906 - app - __init__ - INFO - this is logger
+2025-02-26 09:58:15,252 - app - book - INFO - hahahha
