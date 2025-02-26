@@ -34,13 +34,12 @@ def create_app(test_config=None):
   except OSError:
       pass
 
-  from app.blueprint.book import book_bp
+  from app.blueprint.compund import compund_bp
 
-  app.register_blueprint(book_bp)
+  app.register_blueprint(compund_bp)
 
   register_logging(app)
 
   app.logger.info("this is logger")
-
 
   return app
