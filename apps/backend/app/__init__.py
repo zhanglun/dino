@@ -3,6 +3,8 @@ import tomllib
 import logging
 from logging.handlers import RotatingFileHandler
 from flask import Flask
+from .celery_config import celery_init_app
+from .extensions import extensions
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 print(basedir)
@@ -25,7 +27,7 @@ def register_logging(app):
   if not app.debug:
     app.logger.addHandler(file_handler)
 
-def create_app(test_config=None):
+def create_app(test_config=None) -> Flask:
   app = Flask(__name__, instance_relative_config=True)
   app.config.from_file("config.dev.toml", load=tomllib.load, text=False)
 
@@ -40,6 +42,15 @@ def create_app(test_config=None):
 
   register_logging(app)
 
-  app.logger.info("this is logger")
+  # 按需初始化扩展
+  with app.app_context():
+    _init_extensions(app)
+
+  celery_init_app(app)
 
   return app
+
+
+def _init_extensions(app):
+  extensions.init_celery(app)
+  extensions.init_mongo(app)
