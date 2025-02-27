@@ -7,3 +7,17 @@
 2025-02-26 09:56:48,991 - app - INFO - hahahha
 2025-02-26 09:58:12,906 - app - __init__ - INFO - this is logger
 2025-02-26 09:58:15,252 - app - book - INFO - hahahha
+2025-02-27 17:41:09,385 - app - compound - ERROR - MongoDB operation failed: 'pubchem_cid'
+2025-02-27 17:46:26,800 - app - compound - ERROR - MongoDB operation failed: 'pubchem_cid'
+2025-02-27 17:47:45,544 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:48:52,931 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:54:11,225 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:55:40,130 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:57:46,671 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:57:50,343 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:57:51,834 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:59:01,662 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 17:59:34,105 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 18:00:53,399 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 18:06:54,261 - app - compound - ERROR - MongoDB operation failed: 'mongo'
+2025-02-27 18:07:55,374 - app - compound - ERROR - MongoDB operation failed: 'mongo'

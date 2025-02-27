@@ -1,7 +1,9 @@
 import time
 import requests
 from celery import shared_task
+from flask import current_app
 from app.services.pubchem_client import fetch_compound
+from app.models.compound import CompoundModel
 
 @shared_task(ignore_result=False)
 def add_together(a: int, b: int) -> int:
@@ -19,6 +21,10 @@ def chem_analysis(self, chemical_identifier):
     self.update_state(state='PROGRESS', meta={'progress': 30})
     data = fetch_compound(chemical_identifier)
     print('data', data)
+
+    with current_app.app_context():  # 手动激活应用上下文
+      cm = CompoundModel();
+      cm.save_compound(data)
 
     # 阶段2：数据存储
     self.update_state(state='PROGRESS', meta={'progress': 70})

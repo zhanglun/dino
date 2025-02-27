@@ -19,9 +19,10 @@ def fetch_compound(cid: str) -> dict:
     pc_data = resp.json()
 
     result = {
-      'cid': cid,
+      'pubchem_cid': cid,
       'iupac_name': None,
       'molecular_formula': None,
+      'molecular_weight': None,
       'canonical_smiles': None,
       'isomeric_smiles': None,
       'other_smiles': []
@@ -43,6 +44,13 @@ def fetch_compound(cid: str) -> dict:
           result['molecular_formula'] = value['sval']
         elif 'ival' in value:  # 异常情况处理
             result['molecular_formula'] = str(value['ival'])
+
+      # 处理分子量
+      elif 'molecular weight' in label:
+        if 'sval' in value:
+          result['molecular_weight'] = value['sval']
+        elif 'ival' in value:  # 异常情况处理
+            result['molecular_weight'] = str(value['ival'])
 
       # 处理SMILES（优先顺序：Canonical > Isomeric > 其他）
       elif any(kwd in label + name for kwd in ['smiles']):

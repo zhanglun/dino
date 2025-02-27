@@ -29,7 +29,6 @@ class Extensions:
     self.celery.Task = ContextTask
 
   def init_mongo(self, app):
-    """初始化MongoDB客户端"""
     if not app.config.get("MONGO_URI"):
       raise ValueError("MongoDB URI未配置")
 
@@ -39,9 +38,11 @@ class Extensions:
       connectTimeoutMS=3000,  # 3秒连接超时
       socketTimeoutMS=5000     # 5秒操作超时
     )
+
     try:
-      self.mongo.admin.command('ping')
-      print("Pinged your deployment. You successfully connected to MongoDB!")
+      self.mongo[app.config.get("MONGO_DATABASE_NAME")].command('ping')
+      print("Pinged your deployment. You successfully connected to MongoDB!", app.config.get("MONGO_DATABASE_NAME"))
+      app.extensions["mongo"] = self.mongo
     except Exception as e:
       print(e)
 

@@ -36,9 +36,9 @@ def create_app(test_config=None) -> Flask:
   except OSError:
       pass
 
-  from app.blueprint.compund import compund_bp
+  from app.blueprint.compound import compound_bp
 
-  app.register_blueprint(compund_bp)
+  app.register_blueprint(compound_bp)
 
   register_logging(app)
 
