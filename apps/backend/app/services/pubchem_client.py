@@ -1,8 +1,18 @@
 import requests
+from flask import current_app
 from requests.exceptions import RequestException
 
-def fetch_compound(cid: int) -> dict:
-  url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{cid}/JSON"
+def fetch_compound(cid: str) -> dict:
+  current_app.logger.info("cid", type(cid))
+
+  url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/"
+
+  # 判断是否为CID（纯数字）
+  if cid.isdigit():
+    url += f"cid/{cid}/JSON"
+  else:  # 假定为名称
+    url += f"name/{cid}/JSON"
+
   try:
     resp = requests.get(url, timeout=10)
     resp.raise_for_status()
