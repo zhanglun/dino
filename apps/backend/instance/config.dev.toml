@@ -1,9 +1,5 @@
 MONGO_URI = "mongodb+srv://admin:qwer1234@cluster0.qmmfo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-CELERY_BROKER_URL="redis://:aBF3TIszTqz3mRgywPI0Y0DXdq1fYwEb@redis-16069.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com:16069/0"
-CELERY_RESULT_BACKEND="redis://:aBF3TIszTqz3mRgywPI0Y0DXdq1fYwEb@redis-16069.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com:16069/1"
+CELERY_BROKER_URL="redis://localhost:6379/0"
+CELERY_RESULT_BACKEND="redis://localhost:6379/1"
 
-REDIS_URL="redis-16069.c1.ap-southeast-1-1.ec2.redns.redis-cloud.com"
-REDIS_PORT="16069"
-REDIS_USERNAME="default"
-REDIS_PASSWORD="aBF3TIszTqz3mRgywPI0Y0DXdq1fYwEb"
