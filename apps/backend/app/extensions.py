@@ -1,7 +1,6 @@
 from celery import Celery
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from flask import current_app
 
 class Extensions:
   """集中管理所有第三方扩展"""
@@ -17,7 +16,7 @@ class Extensions:
       task_serializer = 'json',
       result_serializer = 'json',
       accept_content = ['json'],
-      timezone = 'Asia',
+      timezone="Asia/Shanghai",
       enable_utc = True
     )
 
