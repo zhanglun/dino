@@ -1,4 +1,4 @@
-export interface FeedloomMetadata {
+export interface DinoMetadata {
   title?: string;
   description?: string;
   domain?: string;
@@ -113,6 +113,6 @@ export interface HtmlCleaningDebug {
 export interface HtmlCleaningResult {
   content: string;
   contentMarkdown?: string;
-  metadata: FeedloomMetadata;
+  metadata: DinoMetadata;
   debug?: HtmlCleaningDebug;
 }

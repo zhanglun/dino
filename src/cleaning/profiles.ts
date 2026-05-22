@@ -4,7 +4,7 @@ import { parse } from "@iarna/toml";
 
 import type { SiteProfile } from "./types.js";
 
-interface FeedloomTomlRule {
+interface DinoTomlRule {
   match?: {
     host_suffixes?: string[];
     host_regexes?: string[];
@@ -58,7 +58,7 @@ interface FeedloomTomlRule {
   };
 }
 
-function partialAttributePatterns(rule: FeedloomTomlRule): string[] {
+function partialAttributePatterns(rule: DinoTomlRule): string[] {
   return [
     ...(rule.clean?.remove?.class_contains ?? []),
     ...(rule.clean?.remove?.id_contains ?? []),
@@ -66,7 +66,7 @@ function partialAttributePatterns(rule: FeedloomTomlRule): string[] {
   ];
 }
 
-export function profileFromTomlRule(name: string, rule: FeedloomTomlRule): SiteProfile {
+export function profileFromTomlRule(name: string, rule: DinoTomlRule): SiteProfile {
   return {
     name,
     match: {
@@ -127,7 +127,7 @@ export async function loadSiteProfiles(paths: string[]): Promise<SiteProfile[]> 
   const profiles: SiteProfile[] = [];
   for (const path of paths) {
     const text = await readFile(path, "utf8");
-    const raw = parse(text) as unknown as FeedloomTomlRule;
+    const raw = parse(text) as unknown as DinoTomlRule;
     const name = path.split(/[\\/]/).pop()?.replace(/\.toml$/i, "") || path;
     profiles.push(profileFromTomlRule(name, raw));
   }

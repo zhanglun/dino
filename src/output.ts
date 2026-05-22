@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { FeedloomMetadata } from "./cleaning/types.js";
+import type { DinoMetadata } from "./cleaning/types.js";
 
 export type ConflictResolution = "overwrite" | "add" | "cancel";
 
@@ -28,7 +28,7 @@ function yamlString(value: string): string {
   return JSON.stringify(value.replace(FRONTMATTER_ESCAPE_RE, " "));
 }
 
-export function renderFrontmatter(source: string, title: string, metadata: FeedloomMetadata, created: string): string {
+export function renderFrontmatter(source: string, title: string, metadata: DinoMetadata, created: string): string {
   const lines = ["---", `source: ${yamlString(source)}`, `title: ${yamlString(title)}`];
   if (metadata.author) {
     lines.push(`author: ${yamlString(metadata.author)}`);
@@ -80,7 +80,7 @@ function urlHash(url: string): string {
 export interface MarkdownNote {
   sourceUrl: string;
   title: string;
-  metadata: FeedloomMetadata;
+  metadata: DinoMetadata;
   markdown: string;
   created: string;
 }

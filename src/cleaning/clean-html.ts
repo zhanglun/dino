@@ -3,7 +3,7 @@ import { parseHTML } from "linkedom";
 
 import { applyMetadataProfiles, applySiteProfiles } from "./profile-dom.js";
 import { selectActiveProfiles } from "./profiles.js";
-import type { FeedloomMetadata, HtmlCleaningOptions, HtmlCleaningResult, RemovalRecord, SiteProfile } from "./types.js";
+import type { DinoMetadata, HtmlCleaningOptions, HtmlCleaningResult, RemovalRecord, SiteProfile } from "./types.js";
 
 function resolveContentSelector(profiles: SiteProfile[], doc: Document, override?: string): string | undefined {
   if (override) return doc.querySelector(override) ? override : undefined;
@@ -52,8 +52,8 @@ function buildImageFallbackContent(root: Element): string {
   return parts.join("\n");
 }
 
-const DEFAULT_FEEDLOOM_PROFILE: SiteProfile = {
-  name: "feedloom-default",
+const DEFAULT_DINO_PROFILE: SiteProfile = {
+  name: "dino-default",
   removals: {
     exactSelectors: [
       "script",
@@ -168,7 +168,7 @@ function profileAuthorFromDocument(document: Document, profiles: SiteProfile[]):
   return undefined;
 }
 
-function toMetadata(result: DefuddleParseResult, document: Document, profiles: SiteProfile[]): FeedloomMetadata {
+function toMetadata(result: DefuddleParseResult, document: Document, profiles: SiteProfile[]): DinoMetadata {
   return {
     title: result.title || firstMetaContent(document, ["og:title", "twitter:title"]) || document.querySelector("title")?.textContent?.trim() || undefined,
     description: result.description || firstMetaContent(document, ["description", "og:description", "twitter:description"]),
@@ -231,8 +231,8 @@ function appendMetaVideos(document: Document, root: Element, profiles: SiteProfi
 }
 
 function serializeProfiledContent(document: Document, content: string, profiles: SiteProfile[], removals: RemovalRecord[]): string {
-  const { document: contentDocument } = parseHTML(`<!doctype html><html><body><main data-feedloom-profile-root="true">${content}</main></body></html>`);
-  const root = contentDocument.querySelector('[data-feedloom-profile-root="true"]') ?? contentDocument.body;
+  const { document: contentDocument } = parseHTML(`<!doctype html><html><body><main data-dino-profile-root="true">${content}</main></body></html>`);
+  const root = contentDocument.querySelector('[data-dino-profile-root="true"]') ?? contentDocument.body;
   appendMetaImages(document, root, profiles);
   appendMetaVideos(document, root, profiles);
   applySiteProfiles(root, profiles, removals);
@@ -245,7 +245,7 @@ export class HtmlCleaner {
 
   async parse(rawHtml: string): Promise<HtmlCleaningResult> {
     const activeProfiles = this.options.activeProfiles ?? selectActiveProfiles(this.options.profiles, this.options.baseUrl, rawHtml);
-    const postProfiles = [DEFAULT_FEEDLOOM_PROFILE, ...activeProfiles];
+    const postProfiles = [DEFAULT_DINO_PROFILE, ...activeProfiles];
     const removals: RemovalRecord[] = [];
 
     const html = /<html[\s>]/i.test(rawHtml) ? rawHtml : `<!doctype html><html><body>${rawHtml}</body></html>`;

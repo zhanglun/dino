@@ -12,7 +12,7 @@ function longParagraph(): string {
 
 describe("processItem", () => {
   it("writes a markdown note with frontmatter from fetched HTML", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-pipeline-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-pipeline-"));
     try {
       const result = await processItem(
         { url: "https://example.com/demo", sourceKind: "html-page" },
@@ -39,7 +39,7 @@ describe("processItem", () => {
   });
 
   it("uses feed publishedAt as created fallback when HTML has no published metadata", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-created-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-created-"));
     try {
       const result = await processItem(
         {
@@ -64,7 +64,7 @@ describe("processItem", () => {
   });
 
   it("applies matching site profile fetch preferences before fetching HTML", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-profile-fetch-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-profile-fetch-"));
     try {
       const result = await processItem(
         { url: "https://example.com/profile-fetch", sourceKind: "html-page" },
@@ -98,7 +98,7 @@ describe("processItem", () => {
   });
 
   it("uses the configured image fetcher before proxy-aware profile fallback", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-image-fetch-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-image-fetch-"));
     try {
       const result = await processItem(
         { url: "https://example.com/image-fetch", sourceKind: "html-page" },
@@ -131,7 +131,7 @@ describe("processItem", () => {
   });
 
   it("passes proxy-aware fetch to Defuddle for matching site profiles", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-defuddle-fetch-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-defuddle-fetch-"));
     try {
       const result = await processItem(
         { url: "https://youtube.com/watch?v=demo", sourceKind: "html-page" },
@@ -158,7 +158,7 @@ describe("processItem", () => {
   });
 
   it("fails when a matching site profile requires extracted text but extraction is empty", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-require-text-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-require-text-"));
     try {
       await expect(processItem(
         { url: "https://empty.example/video", sourceKind: "html-page" },
@@ -184,7 +184,7 @@ describe("processItem", () => {
   });
 
   it("removes an existing note and matching asset directory before regenerating the same source URL", async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), "feedloom-rerun-"));
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-rerun-"));
     try {
       await mkdir(join(outputDir, "Old Title"), { recursive: true });
       await writeFile(join(outputDir, "Old Title", "content.md"), `---\nsource: "https://example.com/rerun"\ncreated: "2020-01-01"\n---\n\nold body\n`, "utf8");

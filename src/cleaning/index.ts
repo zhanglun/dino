@@ -9,7 +9,7 @@ export {
 } from "./profiles.js";
 export type {
   ContentProfileRules,
-  FeedloomMetadata,
+  DinoMetadata,
   HtmlCleaningDebug,
   HtmlCleaningOptions,
   HtmlCleaningResult,

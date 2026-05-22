@@ -1,20 +1,20 @@
 {
-  "name": "@ariesfish/feedloom",
+  "name": "dino",
   "version": "0.2.2",
   "type": "module",
-  "author": "ariesfish",
+  "author": "zhanglun",
   "license": "MIT",
   "description": "Archive long-form web content as clean Markdown with local assets.",
-  "homepage": "https://github.com/ariesfish/feedloom#readme",
+  "homepage": "https://github.com/zhanglun/dino#readme",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/ariesfish/feedloom.git"
+    "url": "git+ssh://git@github.com/zhanglun/dino.git"
   },
   "bugs": {
-    "url": "https://github.com/ariesfish/feedloom/issues"
+    "url": "https://github.com/zhanglun/dino/issues"
   },
   "bin": {
-    "feedloom": "dist/cli.js"
+    "dino": "dist/cli.js"
   },
   "files": [
     "assets",

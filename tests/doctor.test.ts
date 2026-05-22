@@ -17,7 +17,7 @@ describe("formatDoctorResult", () => {
     };
 
     expect(formatDoctorResult(result)).toBe([
-      "Feedloom doctor",
+      "Dino doctor",
       "✓ Patchright Chromium installation: Chromium executable exists.",
       "  /tmp/chromium",
       "OK",
@@ -39,7 +39,7 @@ describe("formatDoctorResult", () => {
     };
 
     expect(formatDoctorResult(result)).toBe([
-      "Feedloom doctor",
+      "Dino doctor",
       "✗ Patchright Chromium installation: Chromium executable was not found on disk.",
       "  /tmp/missing",
       "  ENOENT",

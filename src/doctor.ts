@@ -194,7 +194,7 @@ export async function runDoctor(options: RunDoctorOptions = {}): Promise<DoctorR
 }
 
 export function formatDoctorResult(result: DoctorResult): string {
-  const lines = ["Feedloom doctor"];
+  const lines = ["Dino doctor"];
   for (const check of result.checks) {
     lines.push(`${check.ok ? "✓" : "✗"} ${check.name}: ${check.message}`);
     if (check.detail) {

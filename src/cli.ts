@@ -91,7 +91,7 @@ program
     };
 
     try {
-      console.error("Feedloom config setup (press Enter to keep default)\n");
+      console.error("Dino config setup (press Enter to keep default)\n");
       const config: DinoConfig = {};
 
       const outputDir = await ask("Output directory", "clippings");
