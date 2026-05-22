@@ -2,12 +2,15 @@
 
 import { readdir } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 
 import { Command } from "commander";
 
 import { loadSiteProfiles } from "./cleaning/profiles.js";
+import { globalConfigPath, loadConfig, localConfigPath, saveConfig, type FeedloomConfig } from "./config.js";
 import { formatDoctorResult, runDoctor } from "./doctor.js";
 import { BatchFetchSessions } from "./fetch/batch.js";
 import { parseInputs, sliceItems } from "./input/inputs.js";
@@ -27,6 +30,12 @@ async function siteRulePathsFromDir(dir: string): Promise<string[]> {
 
 function builtinSiteRulesDir(): string {
   return join(dirname(fileURLToPath(import.meta.url)), "site-rules");
+}
+
+function expandTilde(p: string): string {
+  if (p === "~") return homedir();
+  if (p.startsWith("~/") || p.startsWith("~\\")) return join(homedir(), p.slice(2));
+  return p;
 }
 
 function positiveIntOption(value: unknown, fallback: number): number {
@@ -52,7 +61,49 @@ program
   });
 
 program
-  .option("--output-dir <dir>", "Output directory for markdown notes", "clippings")
+  .command("init")
+  .description("Create a .feedloom.json config file interactively")
+  .option("--global", "Save to ~/.feedloom.json instead of ./.feedloom.json", false)
+  .action(async (opts: { global: boolean }) => {
+    const rl = createInterface({ input: process.stdin, output: process.stderr });
+    const ask = async (question: string, fallback: string): Promise<string> => {
+      const answer = await rl.question(`${question} [${fallback}]: `);
+      return answer.trim() || fallback;
+    };
+
+    try {
+      console.error("Feedloom config setup (press Enter to keep default)\n");
+      const config: FeedloomConfig = {};
+
+      const outputDir = await ask("Output directory", "clippings");
+      if (outputDir !== "clippings") config.outputDir = outputDir;
+
+      const fetchMode = await ask("Fetch mode (auto/static/browser/stealth)", "auto");
+      if (fetchMode !== "auto" && ["static", "browser", "stealth"].includes(fetchMode)) {
+        config.fetchMode = fetchMode as FeedloomConfig["fetchMode"];
+      }
+
+      const waitMsStr = await ask("Browser wait time (ms)", "2500");
+      const waitMs = Number(waitMsStr);
+      if (Number.isInteger(waitMs) && waitMs !== 2500) config.waitMs = waitMs;
+
+      const proxy = await ask("Proxy server (leave blank for none)", "");
+      if (proxy) config.proxy = proxy;
+
+      const siteRulesDir = await ask("Custom site rules directory (leave blank for none)", "");
+      if (siteRulesDir) config.siteRulesDir = siteRulesDir;
+
+      const configPath = opts.global ? globalConfigPath() : localConfigPath();
+      await saveConfig(config, configPath);
+      console.error(`\nSaved config to ${configPath}`);
+      console.error(JSON.stringify(config, null, 2));
+    } finally {
+      rl.close();
+    }
+  });
+
+program
+  .option("--output-dir <dir>", "Output directory for markdown notes")
   .option("--source-kind <kind>", "auto, html-page, or rss-feed", "auto")
   .option("--since <date>", "Only keep feed entries on or after YYYY-MM-DD", "")
   .option("--limit <n>", "Process only first N deduplicated URLs", "0")
@@ -61,19 +112,19 @@ program
   .option("--prefer-browser-state", "Try copied local Chrome profile before regular browser fallback", false)
   .option("--chrome-user-data-dir <path>", "Chrome user data directory used with --prefer-browser-state", "")
   .option("--chrome-profile <name>", "Chrome profile directory name", "Default")
-  .option("--fetch-mode <mode>", "auto, static, browser, or stealth", "auto")
+  .option("--fetch-mode <mode>", "auto, static, browser, or stealth")
   .option("--no-network-idle", "Do not wait for browser networkidle before reading HTML")
-  .option("--wait-ms <ms>", "Extra browser wait after load", "2500")
+  .option("--wait-ms <ms>", "Extra browser wait after load")
   .option("--solve-cloudflare", "In stealth mode, attempt Cloudflare Turnstile/interstitial challenge handling", false)
   .option("--disable-resources", "In stealth mode, block images/media/fonts/stylesheets for speed", false)
-  .option("--proxy <server>", "Proxy server for browser/stealth fetch, e.g. http://127.0.0.1:8080", "")
+  .option("--proxy <server>", "Proxy server for browser/stealth fetch, e.g. http://127.0.0.1:8080")
   .option("--dns-over-https", "Use Chromium Cloudflare DNS-over-HTTPS flag for browser/stealth fetch", false)
   .option("--wait-selector <selector>", "Wait for a CSS selector after page load", "")
   .option("--wait-selector-state <state>", "attached, detached, visible, or hidden", "attached")
   .option("--click-selector <selector...>", "Click one or more selectors after page load", [])
   .option("--scroll-to-bottom", "Scroll to the bottom before reading HTML", false)
   .option("--headful", "Run browser/browser-state fetches with a visible Chrome window", false)
-  .option("--site-rules-dir <dir>", "Optional directory of private TOML site extraction/cleaning rules", "")
+  .option("--site-rules-dir <dir>", "Optional directory of private TOML site extraction/cleaning rules")
   .option("--no-real-chrome-defaults", "Disable Scrapling-inspired real Chrome context defaults")
   .option("--no-reuse-browser", "Disable batch browser/stealth context reuse")
   .argument("[inputs...]", "URLs or files containing URLs")
@@ -83,15 +134,20 @@ program
     }
 
     try {
+      const { config, source: configSource } = await loadConfig();
+      if (configSource) {
+        console.error(`Config: ${configSource}`);
+      }
+
       const sourceKind = String(options.sourceKind ?? "auto") as SourceKind;
       if (!["auto", "html-page", "rss-feed"].includes(sourceKind)) {
         throw new Error("--source-kind must be auto, html-page, or rss-feed");
       }
-      const fetchMode = String(options.fetchMode ?? "auto") as "auto" | "static" | "browser" | "stealth";
+      const fetchMode = String(options.fetchMode ?? config.fetchMode ?? "auto") as "auto" | "static" | "browser" | "stealth";
       if (!["auto", "static", "browser", "stealth"].includes(fetchMode)) {
         throw new Error("--fetch-mode must be auto, static, browser, or stealth");
       }
-      const waitMs = positiveIntOption(options.waitMs, 2500);
+      const waitMs = positiveIntOption(options.waitMs ?? config.waitMs, 2500);
       const waitSelectorState = String(options.waitSelectorState ?? "attached") as "attached" | "detached" | "visible" | "hidden";
       if (!["attached", "detached", "visible", "hidden"].includes(waitSelectorState)) {
         throw new Error("--wait-selector-state must be attached, detached, visible, or hidden");
@@ -105,11 +161,11 @@ program
         positiveIntOption(options.end, 0),
         positiveIntOption(options.limit, 0),
       );
-      const siteRulesDir = String(options.siteRulesDir || "");
+      const siteRulesDir = expandTilde(String(options.siteRulesDir ?? config.siteRulesDir ?? ""));
       const builtinRulePaths = await siteRulePathsFromDir(builtinSiteRulesDir());
       const customRulePaths = siteRulesDir ? await siteRulePathsFromDir(resolve(siteRulesDir)) : [];
       const profiles = await loadSiteProfiles([...builtinRulePaths, ...customRulePaths]);
-      const outputDir = String(options.outputDir ?? "clippings");
+      const outputDir = expandTilde(String(options.outputDir ?? config.outputDir ?? "clippings"));
       let failures = 0;
       const tracker = new ProgressTracker(selected, outputDir);
       if (tracker.path) {
@@ -119,7 +175,7 @@ program
       const browserOptions = {
         waitMs,
         networkIdle: Boolean(options.networkIdle),
-        proxy: String(options.proxy || "") || undefined,
+        proxy: String(options.proxy ?? config.proxy ?? "") || undefined,
         dnsOverHttps: Boolean(options.dnsOverHttps),
         waitSelector: String(options.waitSelector || "") || undefined,
         waitSelectorState,
