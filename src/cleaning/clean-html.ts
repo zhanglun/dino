@@ -2,8 +2,55 @@ import * as DefuddleModule from "defuddle";
 import { parseHTML } from "linkedom";
 
 import { applyMetadataProfiles, applySiteProfiles } from "./profile-dom.js";
-import { firstContentSelector, selectActiveProfiles } from "./profiles.js";
+import { selectActiveProfiles } from "./profiles.js";
 import type { FeedloomMetadata, HtmlCleaningOptions, HtmlCleaningResult, RemovalRecord, SiteProfile } from "./types.js";
+
+function resolveContentSelector(profiles: SiteProfile[], doc: Document, override?: string): string | undefined {
+  if (override) return doc.querySelector(override) ? override : undefined;
+  for (const profile of profiles) {
+    for (const sel of profile.content?.selectors ?? []) {
+      if (sel.trim() && doc.querySelector(sel)) return sel;
+    }
+  }
+  return undefined;
+}
+
+// Reveal content images that are hidden by ancestor visibility/aria-hidden attributes.
+// Without this, sites that lazy-reveal their images (e.g. WeChat swipers) look empty to Defuddle.
+function revealHiddenImages(root: Element): void {
+  for (const img of Array.from(root.querySelectorAll("img"))) {
+    const el = img as unknown as Element;
+    const src = el.getAttribute("src") ?? "";
+    const dataSrc = el.getAttribute("data-src") ?? "";
+    if ((!src || src.startsWith("data:")) && !dataSrc) continue;
+    let ancestor: Element | null = el.parentElement as unknown as Element | null;
+    while (ancestor && ancestor !== root) {
+      const style = ancestor.getAttribute("style") ?? "";
+      if (/visibility\s*:\s*hidden/i.test(style)) {
+        ancestor.setAttribute("style", style.replace(/visibility\s*:\s*hidden\s*;?\s*/gi, "").trim());
+      }
+      if (ancestor.getAttribute("aria-hidden") === "true") {
+        ancestor.removeAttribute("aria-hidden");
+      }
+      ancestor = ancestor.parentElement as unknown as Element | null;
+    }
+  }
+}
+
+// Fallback for image-only content (e.g. WeChat slideshows) when Defuddle returns nothing:
+// collect all real images from the selector root and wrap them in simple paragraphs.
+function buildImageFallbackContent(root: Element): string {
+  const parts: string[] = [];
+  for (const img of Array.from(root.querySelectorAll("img")) as unknown as Element[]) {
+    const src = img.getAttribute("src") ?? "";
+    const dataSrc = img.getAttribute("data-src") ?? "";
+    const actualSrc = (!src || src.startsWith("data:")) ? dataSrc : src;
+    if (!actualSrc) continue;
+    const alt = img.getAttribute("alt") ?? "";
+    parts.push(`<p><img src="${actualSrc}" alt="${alt}"></p>`);
+  }
+  return parts.join("\n");
+}
 
 const DEFAULT_FEEDLOOM_PROFILE: SiteProfile = {
   name: "feedloom-default",
@@ -19,7 +66,7 @@ const DEFAULT_FEEDLOOM_PROFILE: SiteProfile = {
       ".related",
       ".comments",
     ],
-    partialAttributePatterns: ["share", "newsletter", "subscribe", "related", "comment"],
+    partialAttributePatterns: ["share.{0,6}(btn|button|icon|link|bar|widget|count|social)", "newsletter", "subscribe", "related", "comment"],
   },
 };
 
@@ -199,7 +246,6 @@ export class HtmlCleaner {
   async parse(rawHtml: string): Promise<HtmlCleaningResult> {
     const activeProfiles = this.options.activeProfiles ?? selectActiveProfiles(this.options.profiles, this.options.baseUrl, rawHtml);
     const postProfiles = [DEFAULT_FEEDLOOM_PROFILE, ...activeProfiles];
-    const preferredContentSelector = this.options.contentSelector ?? firstContentSelector(activeProfiles);
     const removals: RemovalRecord[] = [];
 
     const html = /<html[\s>]/i.test(rawHtml) ? rawHtml : `<!doctype html><html><body>${rawHtml}</body></html>`;
@@ -207,7 +253,17 @@ export class HtmlCleaner {
     const window = parseHTML(html);
     installDefuddleDomGlobals(window);
     const { document } = window;
-    const contentSelector = preferredContentSelector && document.querySelector(preferredContentSelector) ? preferredContentSelector : undefined;
+    const contentSelector = resolveContentSelector(activeProfiles, document as unknown as Document, this.options.contentSelector);
+    // Capture image fallback content BEFORE Defuddle modifies the document in place.
+    let imageFallback = "";
+    if (contentSelector) {
+      const contentRoot = document.querySelector(contentSelector) as unknown as Element | null;
+      if (contentRoot) {
+        revealHiddenImages(contentRoot);
+        imageFallback = buildImageFallbackContent(contentRoot);
+      }
+    }
+
     const doc = document as Document & { URL?: string };
     if (this.options.baseUrl) {
       doc.URL = this.options.baseUrl;
@@ -234,7 +290,9 @@ export class HtmlCleaner {
 
     const metadata = toMetadata(result, document, activeProfiles);
     applyMetadataProfiles(metadata, activeProfiles);
-    const content = serializeProfiledContent(document, result.content, postProfiles, removals);
+
+    const rawContent = result.content.replace(/<[^>]*>/g, "").trim() ? result.content : imageFallback;
+    const content = serializeProfiledContent(document, rawContent, postProfiles, removals);
 
     return {
       content,
@@ -242,7 +300,7 @@ export class HtmlCleaner {
       metadata,
       debug: this.options.debug
         ? {
-            contentSelector: result.debug?.contentSelector ?? contentSelector ?? preferredContentSelector,
+            contentSelector: result.debug?.contentSelector ?? contentSelector,
             activeProfiles: activeProfiles.map((profile) => profile.name),
             removals: [...(result.debug?.removals ?? []), ...removals],
           }

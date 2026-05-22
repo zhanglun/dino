@@ -1,5 +1,39 @@
 [match]
 host_suffixes = ["mp.weixin.qq.com"]
 
+[fetch]
+mode = "browser"
+scroll_to_bottom = true
+wait_ms = 3000
+
 [extract]
-selectors = ["#js_content"]
+# #js_article is the container for slideshow/gallery articles; #js_content for regular articles
+selectors = ["#js_article", "#js_content"]
+
+[clean.remove]
+selectors = [
+  # Reward/appreciation and like sections
+  "#js_tpl_reward",
+  "#js_reward_area",
+  "#js_like_area",
+  "#js_sponsor_wap",
+  "#js_profile_outer",
+  "#js_pc_qr_code_outer",
+  "#js_tags_preview_toast",
+  "#js_related_posts",
+  "#js_editor_tip",
+  ".rich_media_tool",
+  ".wx_bottom_safe_area",
+  # Slideshow-specific UI: bottom action bar and swiper pagination indicators
+  "#js_article_bottom_bar",
+  "#article_bottom_bar_area",
+  "#content_bottom_interaction",
+  "#js_like_profile_bar",
+  "#js_stream_bottom_bar",
+  "#js_stream_bottom_bar_placeholder",
+  "#img_list_indicator_wrp",
+  "#img_list_indicator",
+  "#img_counter_new",
+]
+id_contains = ["reward", "like_area"]
+class_contains = ["reward_area", "like_wrap", "media_tool_area", "bottom_bar_wrp", "swiper_indicator", "swiper_dot_wrp"]

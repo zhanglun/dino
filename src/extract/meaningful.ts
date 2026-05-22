@@ -19,6 +19,16 @@ function normalizedTextLength(element: Element | Document | null): number {
   return (element?.textContent ?? "").replace(/\s+/g, " ").trim().length;
 }
 
+function contentImageCount(element: Element): number {
+  let count = 0;
+  for (const img of Array.from(element.querySelectorAll("img"))) {
+    const src = img.getAttribute("src") ?? "";
+    const dataSrc = img.getAttribute("data-src") ?? "";
+    if ((!src.startsWith("data:") && src) || dataSrc) count += 1;
+  }
+  return count;
+}
+
 export function visibleTextLength(html: string): number {
   const { document } = parseHTML(html);
   removeNoise(document);
@@ -33,11 +43,15 @@ export function htmlHasMeaningfulContent(url: string, html: string): boolean {
   const { document } = parseHTML(html);
   removeNoise(document);
 
-  const selectors = ["#js_content", "article", "main", "section", "div", "body"];
+  const selectors = ["#js_content", "#js_article", "article", "main", "section", "div", "body"];
   let bestLength = 0;
   for (const selector of selectors) {
     document.querySelectorAll(selector).forEach((element) => {
       bestLength = Math.max(bestLength, normalizedTextLength(element));
+      // Image-heavy articles (photo diaries etc.) count as meaningful even with little text
+      if (selector !== "div" && selector !== "body" && contentImageCount(element) >= 3) {
+        bestLength = Math.max(bestLength, 600);
+      }
     });
     if (bestLength >= 600 && selector !== "div") {
       return true;
