@@ -1,5 +1,5 @@
 [match]
-host_suffixes = ["xiaohongshu.com"]
+host_suffixes = ["xiaohongshu.com", "xhslink.com"]
 
 [fetch]
 mode = "auto"

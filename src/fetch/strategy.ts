@@ -54,7 +54,12 @@ async function writeOutputIfRequested(outputPath: string | undefined, html: stri
 
 export async function fetchHtmlResult(url: string, options: FetchHtmlOptions = {}): Promise<FetchResult> {
   const isMeaningful = options.isMeaningful ?? htmlHasMeaningfulContent;
-  const staticFetch = options.staticFetch ?? (async (targetUrl: string) => (await fetchStaticHtml(targetUrl, undefined, options.useProxyEnv ? proxyAwareFetch : undefined)).html);
+  let resolvedUrl = url;
+  const staticFetch = options.staticFetch ?? (async (targetUrl: string) => {
+    const result = await fetchStaticHtml(targetUrl, undefined, options.useProxyEnv ? proxyAwareFetch : undefined);
+    resolvedUrl = result.url;
+    return result.html;
+  });
   const browserFetch = options.browserFetch ?? ((targetUrl: string) => fetchBrowserHtml(targetUrl, {
     waitMs: options.waitMs,
     networkIdle: options.networkIdle,
@@ -118,7 +123,7 @@ export async function fetchHtmlResult(url: string, options: FetchHtmlOptions = {
       const html = await attempt.fetch();
       await writeOutputIfRequested(options.outputPath, html);
       if (isMeaningful(url, html)) {
-        return { url, finalUrl: url, html, mode: attempt.label, diagnostics: errors };
+        return { url, finalUrl: resolvedUrl, html, mode: attempt.label, diagnostics: errors };
       }
       errors.push(`${attempt.label} missing article content`);
     } catch (error) {

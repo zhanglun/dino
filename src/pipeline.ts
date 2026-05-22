@@ -3,7 +3,7 @@ import { cleanHtml } from "./cleaning/clean-html.js";
 import { selectActiveProfiles } from "./cleaning/profiles.js";
 import type { SiteProfile } from "./cleaning/types.js";
 import { proxyAwareFetch } from "./fetch/proxy-fetch.js";
-import { fetchHtml, type FetchHtmlOptions } from "./fetch/strategy.js";
+import { fetchHtmlResult, type FetchHtmlOptions } from "./fetch/strategy.js";
 import type { UrlItem } from "./models.js";
 import { cleanupExistingNote, sanitizeFilename, writeMarkdownNote, type ConflictResolution } from "./output.js";
 import { htmlToMarkdown } from "./render/markdown.js";
@@ -110,7 +110,9 @@ function mergeProfileFetchOptions(options: ProcessItemOptions, profiles: SitePro
 export async function processItem(item: UrlItem, options: ProcessItemOptions): Promise<ProcessItemResult> {
   const urlProfiles = selectActiveProfiles(options.profiles, item.url, "");
   const fetchOptions = mergeProfileFetchOptions(options, urlProfiles);
-  const html = await fetchHtml(item.url, fetchOptions);
+  const fetchResult = await fetchHtmlResult(item.url, fetchOptions);
+  const html = fetchResult.html;
+  const resolvedUrl = fetchResult.finalUrl;
   const activeProfiles = selectActiveProfiles(options.profiles, item.url, html);
   const defuddleFetch = activeProfiles.some((profile) => profile.fetch?.useProxyEnv) ? proxyAwareFetch : undefined;
   const cleaned = await cleanHtml(html, { baseUrl: item.url, profiles: options.profiles, activeProfiles, defuddleFetch });
@@ -128,7 +130,7 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
     : await localizeImages(cleaned.content, {
         outputDir: options.outputDir,
         noteSlug: noteBase,
-        baseUrl: item.url,
+        baseUrl: resolvedUrl,
         fetchImage: imageFetch,
       });
   const markdown = demoteTopLevelHeadings(stripLeadingDateLine(stripDuplicateLeadingHeading(htmlToMarkdown(contentHtml), title)));
