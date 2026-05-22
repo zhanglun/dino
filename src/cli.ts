@@ -15,8 +15,26 @@ import { formatDoctorResult, runDoctor } from "./doctor.js";
 import { BatchFetchSessions } from "./fetch/batch.js";
 import { parseInputs, sliceItems } from "./input/inputs.js";
 import { expandSourceItems, parseSinceDate, type SourceKind } from "./input/sources.js";
+import { ConflictCancelledError, type ConflictResolution } from "./output.js";
 import { processItem } from "./pipeline.js";
 import { ProgressTracker } from "./tracking.js";
+
+async function promptConflict(conflictDir: string): Promise<ConflictResolution> {
+  if (!process.stdin.isTTY) {
+    console.error(`Conflict: ${conflictDir} already exists — skipping (non-interactive)`);
+    return "cancel";
+  }
+  const rl = createInterface({ input: process.stdin, output: process.stderr });
+  try {
+    const answer = await rl.question(`\nConflict: ${conflictDir} already exists\n[o] Overwrite  [a] Add as new  [c] Cancel > `);
+    const choice = answer.trim().toLowerCase();
+    if (choice === "o" || choice === "overwrite") return "overwrite";
+    if (choice === "a" || choice === "add") return "add";
+    return "cancel";
+  } finally {
+    rl.close();
+  }
+}
 
 const require = createRequire(import.meta.url);
 const packageJson = require("../package.json") as { version?: string };
@@ -212,16 +230,22 @@ program
               disableResources: Boolean(options.disableResources),
               browserFetch: sessions ? (targetUrl: string) => sessions.browserFetch(targetUrl) : undefined,
               stealthFetch: sessions ? (targetUrl: string) => sessions.stealthFetch(targetUrl) : undefined,
+              onConflict: promptConflict,
             });
             console.error(`Wrote ${result.outputPath}`);
             tracker.done(item.url, result.outputPath);
             const checkbox = item.sourcePath ? checkboxFiles.get(item.sourcePath) : undefined;
             checkbox?.markDone(item.lineNo, item.url);
           } catch (error) {
-            failures += 1;
-            const message = (error as Error).message || String(error);
-            tracker.fail(item.url, message);
-            console.error(`Failed ${item.url}: ${message}`);
+            if (error instanceof ConflictCancelledError) {
+              console.error(`Skipped ${item.url}`);
+              tracker.fail(item.url, "skipped");
+            } else {
+              failures += 1;
+              const message = (error as Error).message || String(error);
+              tracker.fail(item.url, message);
+              console.error(`Failed ${item.url}: ${message}`);
+            }
           }
         }
       } finally {

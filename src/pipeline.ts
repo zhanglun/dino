@@ -5,7 +5,7 @@ import type { SiteProfile } from "./cleaning/types.js";
 import { proxyAwareFetch } from "./fetch/proxy-fetch.js";
 import { fetchHtml, type FetchHtmlOptions } from "./fetch/strategy.js";
 import type { UrlItem } from "./models.js";
-import { cleanupExistingNote, sanitizeFilename, writeMarkdownNote } from "./output.js";
+import { cleanupExistingNote, sanitizeFilename, writeMarkdownNote, type ConflictResolution } from "./output.js";
 import { htmlToMarkdown } from "./render/markdown.js";
 
 export interface ProcessItemOptions extends FetchHtmlOptions {
@@ -17,6 +17,7 @@ export interface ProcessItemOptions extends FetchHtmlOptions {
     userDataDir: string;
     profile: string;
   } | null;
+  onConflict?: (conflictDir: string) => Promise<ConflictResolution>;
 }
 
 export interface ProcessItemResult {
@@ -133,6 +134,6 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
     metadata: cleaned.metadata,
     markdown,
     created: resolveCreatedValue(item, cleaned.metadata.published),
-  });
+  }, options.onConflict);
   return { item, outputPath, title };
 }

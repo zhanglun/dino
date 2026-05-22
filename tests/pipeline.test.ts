@@ -186,9 +186,9 @@ describe("processItem", () => {
   it("removes an existing note and matching asset directory before regenerating the same source URL", async () => {
     const outputDir = await mkdtemp(join(tmpdir(), "feedloom-rerun-"));
     try {
-      await mkdir(join(outputDir, "assets", "Old Title"), { recursive: true });
-      await writeFile(join(outputDir, "Old Title.md"), `---\nsource: "https://example.com/rerun"\ncreated: "2020-01-01"\n---\n\nold body\n`, "utf8");
-      await writeFile(join(outputDir, "assets", "Old Title", "image-001.jpg"), "old", "utf8");
+      await mkdir(join(outputDir, "Old Title"), { recursive: true });
+      await writeFile(join(outputDir, "Old Title", "content.md"), `---\nsource: "https://example.com/rerun"\ncreated: "2020-01-01"\n---\n\nold body\n`, "utf8");
+      await writeFile(join(outputDir, "Old Title", "image-001.jpg"), "old", "utf8");
 
       const result = await processItem(
         { url: "https://example.com/rerun", sourceKind: "html-page" },
@@ -201,9 +201,9 @@ describe("processItem", () => {
         },
       );
 
-      expect(result.outputPath.endsWith("New Title.md")).toBe(true);
-      await expect(readFile(join(outputDir, "Old Title.md"), "utf8")).rejects.toThrow();
-      await expect(readFile(join(outputDir, "assets", "Old Title", "image-001.jpg"), "utf8")).rejects.toThrow();
+      expect(result.outputPath.endsWith("content.md")).toBe(true);
+      await expect(readFile(join(outputDir, "Old Title", "content.md"), "utf8")).rejects.toThrow();
+      await expect(readFile(join(outputDir, "Old Title", "image-001.jpg"), "utf8")).rejects.toThrow();
       const note = await readFile(result.outputPath, "utf8");
       expect(note).toContain("meaningful article text");
     } finally {
