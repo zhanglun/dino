@@ -59,6 +59,25 @@ describe("parseInputs", () => {
     await expect(parseInputs(["not-a-url"])).rejects.toThrow("Unsupported input");
   });
 
+  it("extracts multiple URLs from a single text input", async () => {
+    const result = await parseInputs(["check https://example.com/a and https://example.com/b out"]);
+    expect(result.items.map((item) => item.url)).toEqual([
+      "https://example.com/a",
+      "https://example.com/b",
+    ]);
+  });
+
+  it("deduplicates URLs across text inputs", async () => {
+    const result = await parseInputs([
+      "see https://example.com/x here",
+      "and https://example.com/x again with https://example.com/y",
+    ]);
+    expect(result.items.map((item) => item.url)).toEqual([
+      "https://example.com/x",
+      "https://example.com/y",
+    ]);
+  });
+
   it("rejects empty URL files", async () => {
     const dir = await mkdtemp(join(tmpdir(), "dino-inputs-"));
     const file = join(dir, "urls.md");

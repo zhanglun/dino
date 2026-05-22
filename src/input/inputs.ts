@@ -1,7 +1,7 @@
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { URL_RE } from "../constants.js";
+import { URL_RE, URL_RE_GLOBAL } from "../constants.js";
 import { makeUrlItem, type UrlItem } from "../models.js";
 
 export class CheckboxFile {
@@ -78,16 +78,18 @@ export async function parseInputs(inputs: string[]): Promise<ParseInputsResult> 
       continue;
     }
 
-    const match = URL_RE.exec(raw);
-    if (!match) {
+    const matches = [...raw.matchAll(URL_RE_GLOBAL)];
+    if (matches.length === 0) {
       throw new Error(`Unsupported input: ${raw}`);
     }
-    const url = match[0];
-    if (seen.has(url)) {
-      continue;
+    for (const match of matches) {
+      const url = match[0];
+      if (seen.has(url)) {
+        continue;
+      }
+      seen.add(url);
+      items.push(makeUrlItem(url));
     }
-    seen.add(url);
-    items.push(makeUrlItem(url));
   }
 
   if (items.length === 0) {

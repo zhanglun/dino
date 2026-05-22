@@ -147,8 +147,22 @@ program
   .option("--no-real-chrome-defaults", "Disable Scrapling-inspired real Chrome context defaults")
   .option("--no-reuse-browser", "Disable batch browser/stealth context reuse")
   .option("--date-prefix", "Prefix note folder name with YYYY-MM-DD from article date")
+  .option("--stdin", "Read text from stdin and extract URLs from it", false)
   .argument("[inputs...]", "URLs or files containing URLs")
-  .action(async (inputs: string[], options: Record<string, unknown>) => {
+  .action(async (rawInputs: string[], options: Record<string, unknown>) => {
+    let inputs = rawInputs;
+
+    if (options.stdin) {
+      const chunks: string[] = [];
+      for await (const chunk of process.stdin) {
+        chunks.push(typeof chunk === "string" ? chunk : chunk.toString());
+      }
+      const text = chunks.join("");
+      if (text.trim()) {
+        inputs = [text];
+      }
+    }
+
     if (inputs.length === 0) {
       program.help({ error: true });
     }

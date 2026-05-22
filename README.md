@@ -93,6 +93,19 @@ npm run dev -- urls.md --limit 10
 - [x] https://example.com/a
 ```
 
+从粘贴文本中提取 URL 并保存：
+
+```bash
+pbpaste | npm run dev -- --stdin
+echo "看这篇 https://example.com/a 和 https://example.com/b" | npm run dev -- --stdin
+```
+
+也可以直接传入包含 URL 的文本：
+
+```bash
+npm run dev -- "看这篇 https://example.com/a 和 https://example.com/b"
+```
+
 保存 RSS 订阅中的文章：
 
 ```bash
