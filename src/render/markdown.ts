@@ -2,6 +2,33 @@ import { parseHTML } from "linkedom";
 import TurndownService from "turndown";
 import { gfm } from "turndown-plugin-gfm";
 
+function normalizeTablesViaLinkedom(html: string): string {
+  const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
+  // Re-serialize all tables through linkedom to get a clean structure
+  // that Node.js DOMParser (used by turndown) can handle without crashing.
+  for (const table of Array.from(document.querySelectorAll("table"))) {
+    const el = table as unknown as Element;
+    const clone = document.createElement("table");
+    clone.innerHTML = el.innerHTML;
+    el.replaceWith(clone);
+  }
+  // Remove any td/th/tr that ended up outside a table after the above pass
+  for (const orphan of Array.from(document.querySelectorAll("td, th, tr"))) {
+    const el = orphan as unknown as Element;
+    if (!el.closest("table")) {
+      const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+      if (text) {
+        const p = document.createElement("p");
+        p.textContent = text;
+        el.replaceWith(p);
+      } else {
+        el.remove();
+      }
+    }
+  }
+  return document.body.innerHTML;
+}
+
 function normalizeImageReferences(markdown: string): string {
   return markdown.replace(/!\[([^\]]*)\]\(<([^>]+)>\)(?:\{[^}]*\})?/g, (_match, alt: string, url: string) => {
     return `![${alt}](${url})`;
@@ -70,5 +97,19 @@ export function htmlToMarkdown(html: string): string {
       return `\n\n\`\`\`${language}\n${code.textContent?.replace(/\n$/, "") ?? ""}\n\`\`\`\n\n`;
     },
   });
-  return `${cleanupMarkdown(turndown.turndown(normalizeBlockCodeHtml(normalizeTableCellHtml(html))))}\n`;
+  const normalized = normalizeTablesViaLinkedom(normalizeBlockCodeHtml(normalizeTableCellHtml(html)));
+  try {
+    return `${cleanupMarkdown(turndown.turndown(normalized))}\n`;
+  } catch {
+    // Turndown's GFM table plugin crashed on complex table HTML — strip tables and retry
+    const { document } = parseHTML(`<!doctype html><html><body>${normalized}</body></html>`);
+    for (const table of Array.from(document.querySelectorAll("table"))) {
+      const el = table as unknown as Element;
+      const div = document.createElement("div");
+      div.textContent = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+      el.replaceWith(div);
+    }
+    const fallback = new TurndownService({ headingStyle: "atx", codeBlockStyle: "fenced", bulletListMarker: "-" });
+    return `${cleanupMarkdown(fallback.turndown(document.body.innerHTML))}\n`;
+  }
 }
