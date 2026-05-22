@@ -60,6 +60,8 @@ export interface FetchProfileRules {
 export interface MediaProfileRules {
   includeMetaImages?: boolean;
   imageMetaProperties?: string[];
+  includeMetaVideos?: boolean;
+  videoMetaProperties?: string[];
 }
 
 export interface ExtractionProfileRules {

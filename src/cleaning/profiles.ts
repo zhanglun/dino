@@ -38,6 +38,8 @@ interface FeedloomTomlRule {
   media?: {
     include_meta_images?: boolean;
     image_meta_properties?: string[];
+    include_meta_videos?: boolean;
+    video_meta_properties?: string[];
   };
   clean?: {
     remove?: {
@@ -108,6 +110,8 @@ export function profileFromTomlRule(name: string, rule: FeedloomTomlRule): SiteP
     media: {
       includeMetaImages: rule.media?.include_meta_images,
       imageMetaProperties: rule.media?.image_meta_properties,
+      includeMetaVideos: rule.media?.include_meta_videos,
+      videoMetaProperties: rule.media?.video_meta_properties,
     },
     extraction: {
       requireText: rule.extract?.require_text,

@@ -162,10 +162,32 @@ function appendMetaImages(document: Document, root: Element, profiles: SiteProfi
   }
 }
 
+function appendMetaVideos(document: Document, root: Element, profiles: SiteProfile[]): void {
+  const properties = profiles.flatMap((profile) => profile.media?.includeMetaVideos
+    ? (profile.media.videoMetaProperties ?? ["og:video"])
+    : []);
+  if (properties.length === 0) return;
+
+  for (const property of properties) {
+    const escaped = property.replace(/"/g, "\\\"");
+    for (const meta of Array.from(document.querySelectorAll(`meta[property="${escaped}"], meta[name="${escaped}"], meta[itemprop="${escaped}"]`))) {
+      const src = meta.getAttribute("content")?.trim();
+      if (!src) continue;
+      const video = document.createElement("video");
+      video.setAttribute("src", src);
+      video.setAttribute("controls", "");
+      const p = document.createElement("p");
+      p.appendChild(video);
+      root.appendChild(p);
+    }
+  }
+}
+
 function serializeProfiledContent(document: Document, content: string, profiles: SiteProfile[], removals: RemovalRecord[]): string {
   const { document: contentDocument } = parseHTML(`<!doctype html><html><body><main data-feedloom-profile-root="true">${content}</main></body></html>`);
   const root = contentDocument.querySelector('[data-feedloom-profile-root="true"]') ?? contentDocument.body;
   appendMetaImages(document, root, profiles);
+  appendMetaVideos(document, root, profiles);
   applySiteProfiles(root, profiles, removals);
   const serialized = root.innerHTML || root.outerHTML || contentDocument.body.innerHTML;
   return serialized.trim() ? `${serialized.trim()}\n` : "";
