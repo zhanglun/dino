@@ -6,5 +6,7 @@ coverage/
 .dino.json
 
 outputs/
+clippings/
+pnpm-lock.yaml
 MEMORY.md
 skills/feedloom/site-rules/
