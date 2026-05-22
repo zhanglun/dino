@@ -3,7 +3,7 @@ dist/
 coverage/
 .env
 .DS_Store
-.feedloom.json
+.dino.json
 
 outputs/
 MEMORY.md

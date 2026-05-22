@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
 import { loadSiteProfiles } from "./cleaning/profiles.js";
-import { globalConfigPath, loadConfig, localConfigPath, saveConfig, type FeedloomConfig } from "./config.js";
+import { globalConfigPath, loadConfig, localConfigPath, saveConfig, type DinoConfig } from "./config.js";
 import { formatDoctorResult, runDoctor } from "./doctor.js";
 import { BatchFetchSessions } from "./fetch/batch.js";
 import { parseInputs, sliceItems } from "./input/inputs.js";
@@ -65,7 +65,7 @@ function positiveIntOption(value: unknown, fallback: number): number {
 }
 
 program
-  .name("feedloom")
+  .name("dino")
   .description("Archive long-form web content as clean Markdown with local assets")
   .version(packageJson.version ?? "0.0.0");
 
@@ -80,8 +80,8 @@ program
 
 program
   .command("init")
-  .description("Create a .feedloom.json config file interactively")
-  .option("--global", "Save to ~/.feedloom.json instead of ./.feedloom.json", false)
+  .description("Create a .dino.json config file interactively")
+  .option("--global", "Save to ~/.dino.json instead of ./.dino.json", false)
   .action(async (opts: { global: boolean }) => {
     const rl = createInterface({ input: process.stdin, output: process.stderr });
     const ask = async (question: string, fallback: string): Promise<string> => {
@@ -91,14 +91,14 @@ program
 
     try {
       console.error("Feedloom config setup (press Enter to keep default)\n");
-      const config: FeedloomConfig = {};
+      const config: DinoConfig = {};
 
       const outputDir = await ask("Output directory", "clippings");
       if (outputDir !== "clippings") config.outputDir = outputDir;
 
       const fetchMode = await ask("Fetch mode (auto/static/browser/stealth)", "auto");
       if (fetchMode !== "auto" && ["static", "browser", "stealth"].includes(fetchMode)) {
-        config.fetchMode = fetchMode as FeedloomConfig["fetchMode"];
+        config.fetchMode = fetchMode as DinoConfig["fetchMode"];
       }
 
       const waitMsStr = await ask("Browser wait time (ms)", "2500");

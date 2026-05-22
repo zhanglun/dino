@@ -27,7 +27,7 @@ export class ProgressTracker {
       status: "pending",
     }));
     if (items.length > 1) {
-      this.path = join(tmpdir(), `feedloom-progress-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+      this.path = join(tmpdir(), `dino-progress-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
       this.write();
     }
   }
