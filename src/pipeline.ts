@@ -18,6 +18,7 @@ export interface ProcessItemOptions extends FetchHtmlOptions {
     profile: string;
   } | null;
   onConflict?: (conflictDir: string) => Promise<ConflictResolution>;
+  datePrefix?: boolean;
 }
 
 export interface ProcessItemResult {
@@ -134,6 +135,6 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
     metadata: cleaned.metadata,
     markdown,
     created: resolveCreatedValue(item, cleaned.metadata.published),
-  }, options.onConflict);
+  }, options.onConflict, { datePrefix: options.datePrefix });
   return { item, outputPath, title };
 }

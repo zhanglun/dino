@@ -146,6 +146,7 @@ program
   .option("--site-rules-dir <dir>", "Optional directory of private TOML site extraction/cleaning rules")
   .option("--no-real-chrome-defaults", "Disable Scrapling-inspired real Chrome context defaults")
   .option("--no-reuse-browser", "Disable batch browser/stealth context reuse")
+  .option("--date-prefix", "Prefix note folder name with YYYY-MM-DD from article date")
   .argument("[inputs...]", "URLs or files containing URLs")
   .action(async (inputs: string[], options: Record<string, unknown>) => {
     if (inputs.length === 0) {
@@ -232,6 +233,7 @@ program
               browserFetch: sessions ? (targetUrl: string) => sessions.browserFetch(targetUrl) : undefined,
               stealthFetch: sessions ? (targetUrl: string) => sessions.stealthFetch(targetUrl) : undefined,
               onConflict: promptConflict,
+              datePrefix: Boolean(options.datePrefix) || Boolean(config.datePrefix),
             });
             console.error(`Wrote ${result.outputPath}`);
             tracker.done(item.url, result.outputPath);

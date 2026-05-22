@@ -85,12 +85,18 @@ export interface MarkdownNote {
   created: string;
 }
 
+function datePrefixFromCreated(created: string): string {
+  return created.slice(0, 10);
+}
+
 export async function writeMarkdownNote(
   outputDir: string,
   note: MarkdownNote,
   onConflict?: (conflictDir: string) => Promise<ConflictResolution>,
+  options?: { datePrefix?: boolean },
 ): Promise<string> {
-  const base = sanitizeFilename(note.title);
+  const slug = sanitizeFilename(note.title);
+  const base = options?.datePrefix ? `${datePrefixFromCreated(note.created)}-${slug}` : slug;
   const noteDir = join(outputDir, base);
   let targetDir = noteDir;
 
@@ -111,7 +117,7 @@ export async function writeMarkdownNote(
     } else if (resolution === "overwrite") {
       await rm(noteDir, { recursive: true, force: true });
     } else {
-      targetDir = join(outputDir, `${base}-${urlHash(note.sourceUrl)}`);
+      targetDir = join(outputDir, `${base}-${urlHash(note.sourceUrl)}`);  // base already includes date prefix if enabled
     }
   }
 

@@ -8,6 +8,7 @@ export interface DinoConfig {
   waitMs?: number;
   proxy?: string;
   siteRulesDir?: string;
+  datePrefix?: boolean;
 }
 
 const CONFIG_FILENAME = ".dino.json";
