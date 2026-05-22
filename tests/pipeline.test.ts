@@ -123,8 +123,8 @@ describe("processItem", () => {
       );
 
       const note = await readFile(result.outputPath, "utf8");
-      expect(note).toContain("assets/Image%20Fetch/image-001.png");
-      await expect(readFile(join(outputDir, "assets", "Image Fetch", "image-001.png"))).resolves.toEqual(Buffer.from([1, 2, 3]));
+      expect(note).toContain("assets/image-001.png");
+      await expect(readFile(join(outputDir, "Image Fetch", "assets", "image-001.png"))).resolves.toEqual(Buffer.from([1, 2, 3]));
     } finally {
       await rm(outputDir, { recursive: true, force: true });
     }

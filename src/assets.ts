@@ -66,12 +66,13 @@ export async function localizeImages(html: string, options: LocalizeImagesOption
   const videos = Array.from(document.querySelectorAll("video")) as unknown as Element[];
   if (images.length === 0 && inlineSvgs.length === 0 && videos.length === 0) return html;
 
-  const fetchImage = options.fetchImage ?? fetch;
+  const fetchImage = options.fetchImage ?? ((url: string) => fetch(url, { headers: { Referer: options.baseUrl } }));
   const seen = new Map<string, string>();
   let index = 1;
-  const assetDir = join(options.outputDir, "assets", options.noteSlug);
+  const assetDir = join(options.outputDir, options.noteSlug, "assets");
 
   for (const svg of inlineSvgs) {
+    if (!svg.parentNode) continue;
     const filename = `image-${String(index).padStart(3, "0")}.svg`;
     index += 1;
     try {
@@ -81,7 +82,7 @@ export async function localizeImages(html: string, options: LocalizeImagesOption
       continue;
     }
     const img = document.createElement("img");
-    img.setAttribute("src", `assets/${encodeURIComponent(options.noteSlug)}/${filename}`);
+    img.setAttribute("src", `assets/${filename}`);
     img.setAttribute("alt", svgImageAlt(svg));
     const mathContainer = svg.parentElement?.tagName.toLowerCase() === "mjx-container" ? svg.parentElement : null;
     if (mathContainer) {
@@ -105,22 +106,30 @@ export async function localizeImages(html: string, options: LocalizeImagesOption
       let response: Response;
       try {
         response = await fetchImage(absolute);
-      } catch {
+      } catch (err) {
+        console.error(`Asset fetch error: ${absolute.slice(0, 80)} — ${(err as Error).message}`);
         continue;
       }
-      if (!response.ok) continue;
+      if (!response.ok) {
+        console.error(`Asset fetch ${response.status}: ${absolute.slice(0, 80)}`);
+        continue;
+      }
       const contentType = response.headers.get("content-type");
-      if (contentType && !contentType.toLowerCase().startsWith("image/")) continue;
+      if (contentType && !contentType.toLowerCase().startsWith("image/")) {
+        console.error(`Asset skipped (content-type: ${contentType}): ${absolute.slice(0, 80)}`);
+        continue;
+      }
       const ext = extensionFrom(contentType, absolute);
       const filename = `image-${String(index).padStart(3, "0")}${ext}`;
       index += 1;
       try {
         await mkdir(assetDir, { recursive: true });
         await writeFile(join(assetDir, filename), new Uint8Array(await response.arrayBuffer()));
-      } catch {
+      } catch (err) {
+        console.error(`Asset write error: ${filename} — ${(err as Error).message}`);
         continue;
       }
-      rel = `assets/${encodeURIComponent(options.noteSlug)}/${filename}`;
+      rel = `assets/${filename}`;
       seen.set(absolute, rel);
     }
     img.setAttribute("src", rel);

@@ -22,8 +22,8 @@ describe("localizeImages", () => {
       });
 
       expect(calls).toBe(1);
-      expect(html).toContain('src="assets/Demo/image-001.png"');
-      await expect(readFile(join(outputDir, "assets", "Demo", "image-001.png"))).resolves.toEqual(Buffer.from([1, 2, 3]));
+      expect(html).toContain('src="assets/image-001.png"');
+      await expect(readFile(join(outputDir, "Demo", "assets", "image-001.png"))).resolves.toEqual(Buffer.from([1, 2, 3]));
     } finally {
       await rm(outputDir, { recursive: true, force: true });
     }
@@ -44,10 +44,10 @@ describe("localizeImages", () => {
         },
       });
 
-      expect(html).toContain('src="assets/Lazy/image-001.webp"');
+      expect(html).toContain('src="assets/image-001.webp"');
       expect(html).not.toContain("data-src");
       expect(html).not.toContain("srcset");
-      await expect(readFile(join(outputDir, "assets", "Lazy", "image-001.webp"))).resolves.toEqual(Buffer.from([4, 5, 6]));
+      await expect(readFile(join(outputDir, "Lazy", "assets", "image-001.webp"))).resolves.toEqual(Buffer.from([4, 5, 6]));
     } finally {
       await rm(outputDir, { recursive: true, force: true });
     }
