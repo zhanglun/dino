@@ -130,6 +130,28 @@ describe("processItem", () => {
     }
   });
 
+  it("saves assets inside the date-prefixed note folder when datePrefix is enabled", async () => {
+    const outputDir = await mkdtemp(join(tmpdir(), "dino-dateprefix-assets-"));
+    try {
+      const result = await processItem(
+        { url: "https://example.com/dated", sourceKind: "html-page", publishedAt: new Date("2026-03-15T00:00:00.000Z") },
+        {
+          outputDir,
+          datePrefix: true,
+          staticFetch: async () => `<!doctype html><html><head><title>Dated Article</title></head><body><article>${longParagraph()}<img src="/photo.png"></article></body></html>`,
+          browserFetch: async () => { throw new Error("browser should not be used"); },
+          fetchImage: async () => new Response(new Uint8Array([9, 8, 7]), { headers: { "content-type": "image/png" } }),
+        },
+      );
+
+      const note = await readFile(result.outputPath, "utf8");
+      expect(note).toContain("assets/image-001.png");
+      await expect(readFile(join(outputDir, "2026-03-15-Dated Article", "assets", "image-001.png"))).resolves.toEqual(Buffer.from([9, 8, 7]));
+    } finally {
+      await rm(outputDir, { recursive: true, force: true });
+    }
+  });
+
   it("passes proxy-aware fetch to Defuddle for matching site profiles", async () => {
     const outputDir = await mkdtemp(join(tmpdir(), "dino-defuddle-fetch-"));
     try {

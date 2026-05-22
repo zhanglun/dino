@@ -120,11 +120,14 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
   const title = cleaned.metadata.title || item.sourceTitle || titleFromUrl(item.url);
   await cleanupExistingNote(options.outputDir, item.url);
   const imageFetch = options.fetchImage ?? (activeProfiles.some((profile) => profile.fetch?.useProxyEnv) ? proxyAwareFetch : undefined);
+  const created = resolveCreatedValue(item, cleaned.metadata.published);
+  const slug = sanitizeFilename(title);
+  const noteBase = options.datePrefix ? `${created.slice(0, 10)}-${slug}` : slug;
   const contentHtml = options.localizeAssets === false
     ? cleaned.content
     : await localizeImages(cleaned.content, {
         outputDir: options.outputDir,
-        noteSlug: sanitizeFilename(title),
+        noteSlug: noteBase,
         baseUrl: item.url,
         fetchImage: imageFetch,
       });
@@ -134,7 +137,7 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
     title,
     metadata: cleaned.metadata,
     markdown,
-    created: resolveCreatedValue(item, cleaned.metadata.published),
+    created,
   }, options.onConflict, { datePrefix: options.datePrefix });
   return { item, outputPath, title };
 }
