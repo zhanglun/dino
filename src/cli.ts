@@ -67,11 +67,12 @@ function positiveIntOption(value: unknown, fallback: number): number {
 program
   .name("dino")
   .description("Archive long-form web content as clean Markdown with local assets")
-  .version(packageJson.version ?? "0.0.0");
+  .version(packageJson.version ?? "0.0.0")
+  .helpCommand("help [command]", "Display help for dino or a specific command");
 
 program
   .command("doctor")
-  .description("Check Feedloom runtime dependencies")
+  .description("Check dino runtime dependencies")
   .action(async () => {
     const result = await runDoctor();
     console.error(formatDoctorResult(result));
