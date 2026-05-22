@@ -10,6 +10,8 @@
   <p><a href="README.en.md">English</a></p>
 </div>
 
+> **本项目是 [Feedloom](https://github.com/ariesfish/feedloom)（MIT License）的个人 fork，在其基础上增加了若干功能供自用。原始版权归 Feedloom 作者所有，本项目遵循同一 MIT 协议。**
+
 Dino 是一个 Agent 原生的网页剪藏工具。给它一篇文章、一组链接或一个 RSS 订阅，它会为你提取正文、清理页面噪音、下载图片，并生成适合放进个人知识库、Obsidian、离线阅读目录的完整 Markdown 文档。
 
 它适合这些场景：

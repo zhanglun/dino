@@ -8,6 +8,8 @@
   </p>
 </div>
 
+> **This project is a personal fork of [Feedloom](https://github.com/ariesfish/feedloom) (MIT License), extended with additional features for personal use. Original copyright belongs to the Feedloom authors. This project is distributed under the same MIT License.**
+
 Dino is a CLI for saving long-form web content as clean Markdown. It accepts article URLs, URL list files, and RSS/Atom feeds, extracts readable content, downloads page images, and writes portable Markdown notes with YAML frontmatter.
 
 ## Features
