@@ -1,0 +1,116 @@
+export interface FeedloomMetadata {
+  title?: string;
+  description?: string;
+  domain?: string;
+  favicon?: string;
+  image?: string;
+  language?: string;
+  published?: string;
+  author?: string;
+  site?: string;
+  schemaOrgData?: unknown;
+  wordCount?: number;
+  parseTime?: number;
+}
+
+export interface MatchProfileRules {
+  hostSuffixes?: string[];
+  hostRegexes?: string[];
+  urlRegexes?: string[];
+  htmlMarkers?: string[];
+}
+
+export interface ContentProfileRules {
+  selectors?: string[];
+}
+
+export interface RemovalProfileRules {
+  exactSelectors?: string[];
+  partialAttributePatterns?: string[];
+  textContains?: string[];
+  textRegexes?: string[];
+  cutAfterContains?: string[];
+  cutAfterRegexes?: string[];
+  dropExactText?: string[];
+  dropTextRegexes?: string[];
+}
+
+export interface MetadataProfileRules {
+  fixedAuthor?: string;
+  titleSuffixPatterns?: string[];
+  authorSuffixPatterns?: string[];
+  authorSelectors?: string[];
+  authorMetaNames?: string[];
+  authorMetaItemprops?: string[];
+  authorMetaProperties?: string[];
+}
+
+export interface FetchProfileRules {
+  mode?: "auto" | "static" | "browser" | "stealth";
+  preferBrowserState?: boolean;
+  waitMs?: number;
+  networkIdle?: boolean;
+  waitSelector?: string;
+  waitSelectorState?: "attached" | "detached" | "visible" | "hidden";
+  clickSelectors?: string[];
+  scrollToBottom?: boolean;
+  useProxyEnv?: boolean;
+}
+
+export interface MediaProfileRules {
+  includeMetaImages?: boolean;
+  imageMetaProperties?: string[];
+}
+
+export interface ExtractionProfileRules {
+  requireText?: boolean;
+}
+
+export interface SiteProfile {
+  name: string;
+  match?: MatchProfileRules;
+  content?: ContentProfileRules;
+  removals?: RemovalProfileRules;
+  metadata?: MetadataProfileRules;
+  fetch?: FetchProfileRules;
+  media?: MediaProfileRules;
+  extraction?: ExtractionProfileRules;
+}
+
+export interface HtmlCleaningOptions {
+  baseUrl?: string;
+  debug?: boolean;
+  markdown?: boolean;
+  removeSmallImages?: boolean;
+  removeHiddenElements?: boolean;
+  removeLowScoring?: boolean;
+  removeExactSelectors?: boolean;
+  removePartialSelectors?: boolean;
+  removeContentPatterns?: boolean;
+  standardize?: boolean;
+  contentSelector?: string;
+  profiles?: SiteProfile[];
+  activeProfiles?: SiteProfile[];
+  defuddleFetch?: typeof fetch;
+  language?: string;
+}
+
+export interface RemovalRecord {
+  step: string;
+  selector?: string;
+  reason?: string;
+  text: string;
+}
+
+export interface HtmlCleaningDebug {
+  contentSelector?: string;
+  activeProfiles: string[];
+  removals: RemovalRecord[];
+}
+
+export interface HtmlCleaningResult {
+  content: string;
+  contentMarkdown?: string;
+  metadata: FeedloomMetadata;
+  debug?: HtmlCleaningDebug;
+}

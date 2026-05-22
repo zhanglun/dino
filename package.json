@@ -1,0 +1,54 @@
+{
+  "name": "@ariesfish/feedloom",
+  "version": "0.2.2",
+  "type": "module",
+  "author": "ariesfish",
+  "license": "MIT",
+  "description": "Archive long-form web content as clean Markdown with local assets.",
+  "homepage": "https://github.com/ariesfish/feedloom#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ariesfish/feedloom.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ariesfish/feedloom/issues"
+  },
+  "bin": {
+    "feedloom": "dist/cli.js"
+  },
+  "files": [
+    "assets",
+    "dist",
+    "skills",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsup src/cli.ts --format esm --dts --clean && rm -rf dist/site-rules && cp -R src/site-rules dist/site-rules",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "commander": "^14.0.0",
+    "defuddle": "^0.18.1",
+    "fast-xml-parser": "^5.7.2",
+    "linkedom": "^0.18.12",
+    "patchright": "^1.59.4",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/turndown": "^5.0.6",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

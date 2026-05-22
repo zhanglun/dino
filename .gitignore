@@ -1,9 +1,9 @@
-.idea
-node_modules
-venv
-**/cache
-.venv
-__pycache__
-**/data/**
+node_modules/
+dist/
+coverage/
+.env
+.DS_Store
 
-.env.*
+outputs/
+MEMORY.md
+skills/feedloom/site-rules/
