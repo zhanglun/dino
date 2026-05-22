@@ -1,10 +1,12 @@
 # Development Rules
 
-This file is the operational rulebook for coding agents working in Feedloom. Follow it over generic defaults.
+This file is the operational rulebook for coding agents working in Dino. Follow it over generic defaults.
 
 ## Project Overview
 
-Feedloom is a TypeScript ESM CLI for archiving long-form web content as clean Markdown with local assets. It accepts article URLs, URL list files, and RSS/Atom feeds, fetches pages, extracts readable content, converts it to Markdown, downloads images, and writes notes with YAML frontmatter.
+Dino is a TypeScript ESM CLI for archiving long-form web content as clean Markdown with local assets. It accepts article URLs, URL list files, and RSS/Atom feeds, fetches pages, extracts readable content, converts it to Markdown, downloads images, and writes notes with YAML frontmatter.
+
+Dino is a personal fork of [Feedloom](https://github.com/ariesfish/feedloom) (MIT). Original copyright belongs to the Feedloom authors.
 
 Risk profile: the tool performs network fetching and browser automation. Keep defaults conservative, avoid aggressive scraping behavior, and preserve user-controlled rate, auth, and output boundaries.
 
@@ -46,7 +48,7 @@ src/cleaning/           HTML cleaning, profiles, and DOM manipulation
 src/render/             HTML-to-Markdown conversion
 src/site-rules/         Built-in site-specific TOML rules copied into dist/site-rules
 tests/                  Vitest tests mirroring source areas
-skills/feedloom/        Packaged Agent Skill and site-rule reference docs
+skills/feedloom/        Agent Skill definition and site-rule reference docs
 README.md               User-facing documentation
 .github/workflows/      CI and npm release workflows
 ```
@@ -177,7 +179,7 @@ Rules:
 - Prefer narrow, domain-specific selectors over broad selectors.
 - Do not add rules that affect unrelated domains.
 - When adding or changing built-in rules, update `docs/site_rule.md` and `skills/feedloom/references/site-rules.md` in the same change if schema, fields, workflow, examples, fetch behavior, media handling, or rule conventions changed.
-- If the change only adds a new domain rule using existing schema, update docs/skill references when the new rule demonstrates a new recommended pattern or common site capability.
+- If a new domain rule uses existing schema only, update docs/skill references when the rule demonstrates a new recommended pattern or common site capability.
 - Add fixture-based regression tests when changing extraction behavior for a known site.
 
 ## Testing Rules
@@ -217,9 +219,10 @@ dist/
 coverage/
 .env
 .DS_Store
+.dino.json
 outputs/
+clippings/
 MEMORY.md
-src/site-rules/
 skills/feedloom/site-rules/
 ```
 
