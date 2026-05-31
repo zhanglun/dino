@@ -33,18 +33,18 @@ function titleFromUrl(url: string): string {
   return decodeURIComponent(segment || parsed.hostname || "Untitled").replace(/[-_]+/g, " ").trim() || "Untitled";
 }
 
-function stripDuplicateLeadingHeading(markdown: string, title: string): string {
+export function stripDuplicateLeadingHeading(markdown: string, title: string): string {
   const normalizedTitle = title.replace(/\s+/g, " ").trim().toLowerCase();
   return markdown.replace(/^#\s+(.+?)\s*\n+/, (match, heading: string) => {
     return heading.replace(/\s+/g, " ").trim().toLowerCase() === normalizedTitle ? "" : match;
   });
 }
 
-function stripLeadingDateLine(markdown: string): string {
+export function stripLeadingDateLine(markdown: string): string {
   return markdown.replace(/^(?:Published\s+)?(?:\d{4}[-/.年]\d{1,2}[-/.月]\d{1,2}日?|[A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s*\n+/i, "");
 }
 
-function demoteTopLevelHeadings(markdown: string): string {
+export function demoteTopLevelHeadings(markdown: string): string {
   const lines = markdown.split("\n");
   let inFence = false;
   return lines.map((line) => {
