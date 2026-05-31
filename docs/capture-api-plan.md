@@ -1,5 +1,7 @@
 # Dino 库入口 `capture()` 实现计划
 
+> **状态：✅ 已完成（2026-05-31）。** 任务 0–5 全部完成；测试由 59 增至 65 全绿，`import { capture } from "dino"` 可用，真实 URL 验证通过。所有 commit 在 `feat/capture-library-api` 分支。
+
 > **致执行者：** 逐任务实现，每步用 checkbox（`- [ ]`）追踪。**铁律：dino 现有 59 个测试必须始终全绿**，任何一步导致回归即停下修复。
 
 **目标：** 给 dino 增加一个中立的库入口 `import { capture } from "dino"`，给定 URL 返回一份不落盘的内容数据（markdown + 图片二进制），不改变现有 CLI 与 `processItem` 的任何行为。
@@ -44,7 +46,7 @@ export interface CaptureOptions {
 
 ## 基线：确认安全网
 
-- [ ] **步骤 0：确认现有测试全绿、工作树干净**
+- [x] **步骤 0：确认现有测试全绿、工作树干净**
 
 执行：`cd /Users/zhanglun/Documents/mine/dino && git status --short && npx vitest run`
 预期：工作树干净；`Test Files 10 passed`、`Tests 59 passed`。
@@ -59,7 +61,7 @@ export interface CaptureOptions {
 **文件：**
 - 修改：`src/pipeline.ts`
 
-- [ ] **步骤 1：在 `pipeline.ts` 新增 `ProducedContent` 类型与 `produceContent` 函数**
+- [x] **步骤 1：在 `pipeline.ts` 新增 `ProducedContent` 类型与 `produceContent` 函数**
 
 在 `processItem` 之前插入：
 
@@ -93,7 +95,7 @@ async function produceContent(item: UrlItem, options: ProcessItemOptions): Promi
 }
 ```
 
-- [ ] **步骤 2：改写 `processItem` 复用 `produceContent`，其余逐字节保留**
+- [x] **步骤 2：改写 `processItem` 复用 `produceContent`，其余逐字节保留**
 
 将 `processItem` 函数体替换为：
 
@@ -125,12 +127,12 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
 
 > 注意：逐字节对照原实现，确保 `cleanupExistingNote` → `localizeImages` → `htmlToMarkdown` + 三个文本清理 → `writeMarkdownNote` 的调用参数与顺序完全不变。`noteBase` 由 `sanitizeFilename(title)`（datePrefix 时加日期前缀）推导，与原逻辑一致。本步只是把「fetch→clean→title→created」搬进 `produceContent`，落盘段保持原样。
 
-- [ ] **步骤 3：跑全量测试，确认零回归**
+- [x] **步骤 3：跑全量测试，确认零回归**
 
 执行：`npx vitest run`
 预期：`Tests 59 passed`。**若有任何失败，说明重构改变了行为，回退本步重做。**
 
-- [ ] **步骤 4：提交**
+- [x] **步骤 4：提交**
 
 ```bash
 git add -A
@@ -147,7 +149,7 @@ git commit -m "refactor(pipeline): extract produceContent for reuse by library A
 - 创建：`src/collect-images.ts`
 - 创建：`tests/collect-images.test.ts`
 
-- [ ] **步骤 1：编写失败的测试 `tests/collect-images.test.ts`**
+- [x] **步骤 1：编写失败的测试 `tests/collect-images.test.ts`**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -217,12 +219,12 @@ describe("collectImages", () => {
 });
 ```
 
-- [ ] **步骤 2：运行测试，确认失败**
+- [x] **步骤 2：运行测试，确认失败**
 
 执行：`npx vitest run tests/collect-images.test.ts`
 预期：失败 —— 找不到模块 `../src/collect-images.js`。
 
-- [ ] **步骤 3：实现 `src/collect-images.ts`**
+- [x] **步骤 3：实现 `src/collect-images.ts`**
 
 ```ts
 import { extname } from "node:path";
@@ -332,17 +334,17 @@ export async function collectImages(
 }
 ```
 
-- [ ] **步骤 4：运行测试，确认通过**
+- [x] **步骤 4：运行测试，确认通过**
 
 执行：`npx vitest run tests/collect-images.test.ts`
 预期：4 个测试通过。
 
-- [ ] **步骤 5：跑全量测试，确认未影响现有功能**
+- [x] **步骤 5：跑全量测试，确认未影响现有功能**
 
 执行：`npx vitest run`
 预期：`Tests 63 passed`（原 59 + 新 4）。
 
-- [ ] **步骤 6：提交**
+- [x] **步骤 6：提交**
 
 ```bash
 git add -A
@@ -360,14 +362,14 @@ git commit -m "feat(assets): add in-memory collectImages (img only) for library 
 - 创建：`tests/capture.test.ts`
 - 修改：`src/pipeline.ts`（导出 `produceContent`，供 capture 复用）
 
-- [ ] **步骤 1：在 `pipeline.ts` 把 `produceContent` 与 `ProducedContent` 改为导出**
+- [x] **步骤 1：在 `pipeline.ts` 把 `produceContent` 与 `ProducedContent` 改为导出**
 
 将任务 1 中 `async function produceContent` 改为 `export async function produceContent`，`interface ProducedContent` 改为 `export interface ProducedContent`。
 
 执行：`npx vitest run`
 预期：仍 `Tests 63 passed`（仅加 export，不改逻辑）。
 
-- [ ] **步骤 2：编写失败的测试 `tests/capture.test.ts`**
+- [x] **步骤 2：编写失败的测试 `tests/capture.test.ts`**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -408,12 +410,12 @@ describe("capture", () => {
 
 > 说明：`capture` 的 options 透传 `staticFetch`/`browserFetch`/`fetchImage` 等给底层（与 `processItem` 同样的可注入点），因此测试无需网络。
 
-- [ ] **步骤 3：运行测试，确认失败**
+- [x] **步骤 3：运行测试，确认失败**
 
 执行：`npx vitest run tests/capture.test.ts`
 预期：失败 —— 找不到模块 `../src/capture.js`。
 
-- [ ] **步骤 4：实现 `src/capture.ts`**
+- [x] **步骤 4：实现 `src/capture.ts`**
 
 ```ts
 import { collectImages } from "./collect-images.js";
@@ -467,7 +469,7 @@ export async function capture(url: string, options: CaptureOptions = {}): Promis
 
 > 说明：`produceContent` 的入参类型是 `ProcessItemOptions`（含 `outputDir`）。`capture` 不落盘，但 `produceContent` 不读 `outputDir`（落盘发生在它之外），故传 `outputDir: ""` 安全。`markdown` 这里只做 `htmlToMarkdown`，未套用 `processItem` 里的 `demoteTopLevelHeadings/stripLeadingDateLine/stripDuplicateLeadingHeading` 文本清理——见步骤 5 决策点。
 
-- [ ] **步骤 5：决定是否套用文本清理（与 processItem 对齐）**
+- [x] **步骤 5：决定是否套用文本清理（与 processItem 对齐）**
 
 `processItem` 对 markdown 额外做了 `demoteTopLevelHeadings(stripLeadingDateLine(stripDuplicateLeadingHeading(...)))`。为使 `capture()` 产出与 dino 落盘文件的正文一致，应同样套用。修改 `capture.ts` 的 markdown 行为：
 
@@ -482,17 +484,17 @@ const markdown = demoteTopLevelHeadings(stripLeadingDateLine(stripDuplicateLeadi
 执行：`npx vitest run`
 预期：仍全绿（仅加 export）。
 
-- [ ] **步骤 6：运行 capture 测试，确认通过**
+- [x] **步骤 6：运行 capture 测试，确认通过**
 
 执行：`npx vitest run tests/capture.test.ts`
 预期：2 个测试通过。
 
-- [ ] **步骤 7：跑全量测试**
+- [x] **步骤 7：跑全量测试**
 
 执行：`npx vitest run`
 预期：`Tests 65 passed`（63 + 2）。
 
-- [ ] **步骤 8：提交**
+- [x] **步骤 8：提交**
 
 ```bash
 git add -A
@@ -509,14 +511,14 @@ git commit -m "feat: add capture() library function returning in-memory content 
 - 创建：`src/index.ts`
 - 修改：`package.json`
 
-- [ ] **步骤 1：创建 `src/index.ts`（库 barrel）**
+- [x] **步骤 1：创建 `src/index.ts`（库 barrel）**
 
 ```ts
 export { capture } from "./capture.js";
 export type { CaptureAsset, CaptureOptions, CaptureResult } from "./capture.js";
 ```
 
-- [ ] **步骤 2：在 `package.json` 增加 `exports` 与 `module`，保留 `bin`**
+- [x] **步骤 2：在 `package.json` 增加 `exports` 与 `module`，保留 `bin`**
 
 在 `package.json` 中加入（与现有字段并列；`bin` 保持不变）：
 
@@ -540,17 +542,17 @@ export type { CaptureAsset, CaptureOptions, CaptureResult } from "./capture.js";
 
 > dino 现状构建工具是 **tsup**（实测 package.json）。本次改造**沿用 tsup，不切换构建工具**（换工具是无关变更、徒增风险）。改动仅是把 `src/index.ts` 加为第二个入口。
 
-- [ ] **步骤 3：构建并验证库入口可被解析**
+- [x] **步骤 3：构建并验证库入口可被解析**
 
 执行：`npm run build && node -e "import('./dist/index.js').then(m=>console.log('exports:', Object.keys(m)))"`
 预期：输出包含 `capture`。
 
-- [ ] **步骤 4：跑全量测试，确认 CLI 与现有行为未受影响**
+- [x] **步骤 4：跑全量测试，确认 CLI 与现有行为未受影响**
 
 执行：`npx vitest run`
 预期：`Tests 65 passed`。
 
-- [ ] **步骤 5：提交**
+- [x] **步骤 5：提交**
 
 ```bash
 git add -A
@@ -561,7 +563,7 @@ git commit -m "feat: expose capture() as dino library entry via package exports"
 
 ## 任务 5：真实 URL 端到端验证
 
-- [ ] **步骤 1：用真实页面跑 `capture()`，确认返回真实数据**
+- [x] **步骤 1：用真实页面跑 `capture()`，确认返回真实数据**
 
 创建临时脚本 `try-capture.mts`（放项目根，跑完即删；dino 无 scripts/ 目录，tsconfig 也不含它，故不放 scripts/）：
 
@@ -582,13 +584,13 @@ console.log("markdown head:\n", res.markdown.slice(0, 300));
 执行：`npx tsx try-capture.mts "https://en.wikipedia.org/wiki/Markdown"`
 预期：打印出 title=Markdown、若干 assets、markdown 正文开头；assets 的 path 与 markdown 中的 `assets/image-NNN` 引用一致。
 
-- [ ] **步骤 2：清理临时脚本**
+- [x] **步骤 2：清理临时脚本**
 
 ```bash
 rm try-capture.mts
 ```
 
-- [ ] **步骤 3：（可选）更新 README 增加库用法片段**
+- [x] **步骤 3：（可选）更新 README 增加库用法片段**
 
 在 dino README 增加：
 
@@ -603,7 +605,7 @@ const result = await capture("https://example.com/article");
 ```
 ````
 
-- [ ] **步骤 4：提交**
+- [x] **步骤 4：提交**
 
 ```bash
 git add -A
@@ -614,8 +616,8 @@ git commit -m "docs: document capture() library usage"
 
 ## 验收
 
-- [ ] `import { capture } from "dino"` 可用，返回 `CaptureResult`。
-- [ ] `capture()` 不写任何文件（全内存）。
-- [ ] dino 现有 CLI 与 `processItem` 行为不变（65 测试全绿，原 59 个无回归）。
-- [ ] 真实 URL 跑通：markdown 中的图片引用与 `assets[].path` 一致。
-- [ ] dino 保持中立：`CaptureResult` 不含任何 amber/R2/占位符概念。
+- [x] `import { capture } from "dino"` 可用，返回 `CaptureResult`。
+- [x] `capture()` 不写任何文件（全内存）。
+- [x] dino 现有 CLI 与 `processItem` 行为不变（65 测试全绿，原 59 个无回归）。
+- [x] 真实 URL 跑通：markdown 中的图片引用与 `assets[].path` 一致。
+- [x] dino 保持中立：`CaptureResult` 不含任何 amber/R2/占位符概念。
