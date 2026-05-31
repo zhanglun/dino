@@ -103,6 +103,71 @@ Use stealth mode only when normal static/browser fetching is insufficient:
 npm run dev -- "https://example.com/article" --fetch-mode stealth --solve-cloudflare
 ```
 
+## Command Reference
+
+### Subcommands
+
+| Command | Description |
+| --- | --- |
+| `dino <url\|file...>` | Default. Process URLs, URL list files, or RSS feeds. |
+| `dino init [--global]` | Create a `.dino.json` config file interactively. `--global` saves to `~/.dino.json`. |
+| `dino doctor` | Check runtime dependencies (Patchright Chromium etc.) and auto-install if missing. |
+
+### Input Control
+
+| Option | Description |
+| --- | --- |
+| `--stdin` | Read text from stdin and extract URLs from it. |
+| `--source-kind <kind>` | Input type: `auto`, `html-page`, or `rss-feed`. Default `auto`. |
+| `--since <date>` | Only process feed entries on or after `YYYY-MM-DD`. |
+| `--limit <n>` | Process at most N URLs. |
+| `--start <n>` / `--end <n>` | Slice the deduplicated URL list by 1-based index. |
+
+### Output Control
+
+| Option | Description |
+| --- | --- |
+| `--output-dir <dir>` | Output directory. Default `clippings`. |
+| `--date-prefix` | Prepend `YYYY-MM-DD-` to output folder names. |
+| `--site-rules-dir <dir>` | Directory for private TOML site extraction/cleaning rules. |
+
+### Fetch Control
+
+| Option | Description |
+| --- | --- |
+| `--fetch-mode <mode>` | `auto`, `static`, `browser`, or `stealth`. |
+| `--wait-ms <ms>` | Extra wait after page load in browser mode. Default 2500. |
+| `--no-network-idle` | Do not wait for browser networkidle before reading HTML. |
+| `--wait-selector <sel>` | Wait for a CSS selector after page load. |
+| `--wait-selector-state <state>` | `attached`, `detached`, `visible`, or `hidden`. Default `attached`. |
+| `--click-selector <sel...>` | Click one or more selectors after page load. |
+| `--scroll-to-bottom` | Scroll to the bottom before reading HTML. |
+
+### Browser State
+
+| Option | Description |
+| --- | --- |
+| `--prefer-browser-state` | Prefer local Chrome login state for browser fetch. |
+| `--chrome-user-data-dir <path>` | Chrome user data directory. |
+| `--chrome-profile <name>` | Chrome profile directory name. Default `Default`. |
+| `--headful` | Show the browser window (for debugging). |
+
+### Network & Proxy
+
+| Option | Description |
+| --- | --- |
+| `--proxy <server>` | Proxy server address. |
+| `--dns-over-https` | Enable Chromium Cloudflare DNS-over-HTTPS. |
+
+### Advanced
+
+| Option | Description |
+| --- | --- |
+| `--solve-cloudflare` | In stealth mode, handle Cloudflare Turnstile/interstitial challenges. |
+| `--disable-resources` | In stealth mode, block images/media/fonts/stylesheets for speed. |
+| `--no-real-chrome-defaults` | Disable Scrapling-style real Chrome context defaults. |
+| `--no-reuse-browser` | Disable browser context reuse during batch processing. |
+
 ## Configuration
 
 Create a `.dino.json` config file interactively:
@@ -125,6 +190,47 @@ Supported fields:
 ```
 
 Setting `datePrefix: true` prepends `YYYY-MM-DD-` to each output folder name.
+
+## Library Usage
+
+Dino can also be used as a Node.js library:
+
+```ts
+import { capture } from "dino";
+
+const result = await capture("https://example.com/article", {
+  fetchMode: "static",
+});
+
+console.log(result.title);    // "Article Title"
+console.log(result.markdown); // Full Markdown content
+console.log(result.assets);   // [{ path: "assets/image.jpg", data: Uint8Array, ... }]
+```
+
+`capture()` returns a `CaptureResult` without writing to disk:
+
+```ts
+interface CaptureResult {
+  url: string;            // Final URL (may have been redirected)
+  title: string;          // Article title
+  markdown: string;       // Converted Markdown
+  author?: string;        // Author
+  publishedAt?: string;   // Publication date
+  assets: CaptureAsset[]; // Image binary data
+}
+
+interface CaptureAsset {
+  path: string;           // Suggested relative path
+  data: Uint8Array;       // Image binary
+  contentType?: string;   // MIME type
+}
+```
+
+`CaptureOptions` fields:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `fetchMode` | `"auto" \| "static" \| "browser" \| "stealth"` | Fetch mode. Default `auto`. |
 
 ## Output
 

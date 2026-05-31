@@ -37,6 +37,7 @@
     "build": "tsup src/cli.ts src/index.ts --format esm --dts --clean && rm -rf dist/site-rules && cp -R src/site-rules dist/site-rules",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "prepare": "npm run build",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "dependencies": {
