@@ -1,7 +1,7 @@
 import { localizeImages } from "./assets.js";
 import { cleanHtml } from "./cleaning/clean-html.js";
 import { selectActiveProfiles } from "./cleaning/profiles.js";
-import type { SiteProfile } from "./cleaning/types.js";
+import type { DinoMetadata, SiteProfile } from "./cleaning/types.js";
 import { proxyAwareFetch } from "./fetch/proxy-fetch.js";
 import { fetchHtmlResult, type FetchHtmlOptions } from "./fetch/strategy.js";
 import type { UrlItem } from "./models.js";
@@ -107,7 +107,17 @@ function mergeProfileFetchOptions(options: ProcessItemOptions, profiles: SitePro
   return merged;
 }
 
-export async function processItem(item: UrlItem, options: ProcessItemOptions): Promise<ProcessItemResult> {
+export interface ProducedContent {
+  resolvedUrl: string;
+  title: string;
+  created: string;
+  cleanedHtml: string;
+  metadata: DinoMetadata;
+  imageFetch?: typeof fetch;
+}
+
+/** 纯数据生产：抓取 + 清洗 + 元数据 + 标题/created。无落盘副作用。 */
+export async function produceContent(item: UrlItem, options: ProcessItemOptions): Promise<ProducedContent> {
   const urlProfiles = selectActiveProfiles(options.profiles, item.url, "");
   const fetchOptions = mergeProfileFetchOptions(options, urlProfiles);
   const fetchResult = await fetchHtmlResult(item.url, fetchOptions);
@@ -120,14 +130,19 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
     throw new Error("matched site rule requires extracted text, but no text content was extracted");
   }
   const title = cleaned.metadata.title || item.sourceTitle || titleFromUrl(item.url);
-  await cleanupExistingNote(options.outputDir, item.url);
   const imageFetch = options.fetchImage ?? (activeProfiles.some((profile) => profile.fetch?.useProxyEnv) ? proxyAwareFetch : undefined);
   const created = resolveCreatedValue(item, cleaned.metadata.published);
+  return { resolvedUrl, title, created, cleanedHtml: cleaned.content, metadata: cleaned.metadata, imageFetch };
+}
+
+export async function processItem(item: UrlItem, options: ProcessItemOptions): Promise<ProcessItemResult> {
+  const { resolvedUrl, title, created, cleanedHtml, metadata, imageFetch } = await produceContent(item, options);
+  await cleanupExistingNote(options.outputDir, item.url);
   const slug = sanitizeFilename(title);
   const noteBase = options.datePrefix ? `${created.slice(0, 10)}-${slug}` : slug;
   const contentHtml = options.localizeAssets === false
-    ? cleaned.content
-    : await localizeImages(cleaned.content, {
+    ? cleanedHtml
+    : await localizeImages(cleanedHtml, {
         outputDir: options.outputDir,
         noteSlug: noteBase,
         baseUrl: resolvedUrl,
@@ -137,7 +152,7 @@ export async function processItem(item: UrlItem, options: ProcessItemOptions): P
   const outputPath = await writeMarkdownNote(options.outputDir, {
     sourceUrl: item.url,
     title,
-    metadata: cleaned.metadata,
+    metadata,
     markdown,
     created,
   }, options.onConflict, { datePrefix: options.datePrefix });
