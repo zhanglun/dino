@@ -13,6 +13,15 @@
   "bugs": {
     "url": "https://github.com/zhanglun/dino/issues"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "bin": {
     "dino": "dist/cli.js"
   },
@@ -25,7 +34,7 @@
   ],
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "build": "tsup src/cli.ts --format esm --dts --clean && rm -rf dist/site-rules && cp -R src/site-rules dist/site-rules",
+    "build": "tsup src/cli.ts src/index.ts --format esm --dts --clean && rm -rf dist/site-rules && cp -R src/site-rules dist/site-rules",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
