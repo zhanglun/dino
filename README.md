@@ -124,6 +124,71 @@ npm run dev -- "https://example.com/article" --fetch-mode browser --wait-ms 4000
 npm run dev -- "https://example.com/article" --fetch-mode stealth --solve-cloudflare
 ```
 
+## 命令参考
+
+### 子命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `dino <url\|file...>` | 默认命令。处理 URL、URL 列表文件或 RSS 订阅。 |
+| `dino init [--global]` | 交互式创建 `.dino.json` 配置文件。`--global` 保存到 `~/.dino.json`。 |
+| `dino doctor` | 检查运行时依赖（Patchright Chromium 等），缺失时自动安装。 |
+
+### 输入控制
+
+| 选项 | 说明 |
+| --- | --- |
+| `--stdin` | 从 stdin 读取文本，自动提取其中的 URL。 |
+| `--source-kind <kind>` | 输入类型：`auto`、`html-page`、`rss-feed`。默认 `auto`。 |
+| `--since <date>` | 仅处理指定日期之后的 RSS 条目，格式 `YYYY-MM-DD`。 |
+| `--limit <n>` | 最多处理 N 个 URL。 |
+| `--start <n>` / `--end <n>` | 按索引截取 URL 范围（1-based）。 |
+
+### 输出控制
+
+| 选项 | 说明 |
+| --- | --- |
+| `--output-dir <dir>` | 输出目录，默认 `clippings`。 |
+| `--date-prefix` | 文件夹名前加 `YYYY-MM-DD-` 前缀。 |
+| `--site-rules-dir <dir>` | 指定私有 TOML 站点规则目录。 |
+
+### 抓取控制
+
+| 选项 | 说明 |
+| --- | --- |
+| `--fetch-mode <mode>` | `auto`、`static`、`browser`、`stealth`。 |
+| `--wait-ms <ms>` | 浏览器模式下页面加载后额外等待时间。默认 2500。 |
+| `--no-network-idle` | 不等待浏览器 networkidle。 |
+| `--wait-selector <sel>` | 等待指定 CSS 选择器出现。 |
+| `--wait-selector-state <state>` | `attached`、`detached`、`visible`、`hidden`。默认 `attached`。 |
+| `--click-selector <sel...>` | 页面加载后点击指定选择器。 |
+| `--scroll-to-bottom` | 加载后滚动到页面底部。 |
+
+### 浏览器状态
+
+| 选项 | 说明 |
+| --- | --- |
+| `--prefer-browser-state` | 优先使用本机 Chrome 登录状态。 |
+| `--chrome-user-data-dir <path>` | Chrome 用户数据目录。 |
+| `--chrome-profile <name>` | Chrome 配置目录名。默认 `Default`。 |
+| `--headful` | 显示浏览器窗口（调试用）。 |
+
+### 网络与代理
+
+| 选项 | 说明 |
+| --- | --- |
+| `--proxy <server>` | 代理服务器地址。 |
+| `--dns-over-https` | 启用 Chromium Cloudflare DoH。 |
+
+### 高级
+
+| 选项 | 说明 |
+| --- | --- |
+| `--solve-cloudflare` | stealth 模式下自动处理 Cloudflare 验证。 |
+| `--disable-resources` | stealth 模式下屏蔽图片/媒体/字体/样式以加速。 |
+| `--no-real-chrome-defaults` | 禁用 Scrapling 风格的 Chrome 上下文默认值。 |
+| `--no-reuse-browser` | 禁用批量处理时的浏览器上下文复用。 |
+
 ## 配置文件
 
 在项目目录运行 `dino init` 创建 `.dino.json` 配置文件：
@@ -146,6 +211,47 @@ npm run dev -- init
 ```
 
 `datePrefix: true` 会在输出文件夹名称前加上 `YYYY-MM-DD-` 前缀。
+
+## 作为库使用
+
+Dino 也可以作为 Node.js 库在代码中调用：
+
+```ts
+import { capture } from "dino";
+
+const result = await capture("https://example.com/article", {
+  fetchMode: "static",
+});
+
+console.log(result.title);    // "Article Title"
+console.log(result.markdown); // 完整 Markdown 正文
+console.log(result.assets);   // [{ path: "assets/image.jpg", data: Uint8Array, ... }]
+```
+
+`capture()` 返回 `CaptureResult`，不落盘：
+
+```ts
+interface CaptureResult {
+  url: string;            // 最终 URL（可能经过重定向）
+  title: string;          // 文章标题
+  markdown: string;       // 转换后的 Markdown
+  author?: string;        // 作者
+  publishedAt?: string;   // 发布日期
+  assets: CaptureAsset[]; // 图片二进制数据
+}
+
+interface CaptureAsset {
+  path: string;           // 建议的相对路径
+  data: Uint8Array;       // 图片二进制
+  contentType?: string;   // MIME 类型
+}
+```
+
+`CaptureOptions` 支持以下字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `fetchMode` | `"auto" \| "static" \| "browser" \| "stealth"` | 抓取模式，默认 `auto`。 |
 
 ## 输出长什么样
 
