@@ -17,7 +17,6 @@ export interface CollectImagesOptions {
   fetchImage?: typeof fetch;
 }
 
-// 与 assets.ts 的 extensionFrom 平行；未来应提取共享（见 docs/architecture.md 技术债）。
 function extensionFrom(contentType: string | null, url: string): string {
   const pathExt = extname(new URL(url).pathname).replace(/[^.a-z0-9]/gi, "");
   if (pathExt && pathExt.length <= 8) return pathExt;
@@ -28,7 +27,6 @@ function extensionFrom(contentType: string | null, url: string): string {
   return ".jpg";
 }
 
-// 与 assets.ts 的 imageSource 平行。
 function imageSource(img: Element): string | null {
   const direct = img.getAttribute("data-original") || img.getAttribute("data-src") || img.getAttribute("src");
   if (direct) return direct;
@@ -37,23 +35,50 @@ function imageSource(img: Element): string | null {
   return first || null;
 }
 
-/**
- * 内存版图片本地化（仅 <img>）。下载到内存而非磁盘，改写 src 为 assets/image-NNN.ext。
- * 注意：与 assets.ts 的 localizeImages 的 img 分支逻辑平行，未来应提取共享核心
- * （见 docs/architecture.md 技术债）。v1 不处理 svg / video。
- */
+function svgImageAlt(svg: Element): string {
+  return svg.getAttribute("aria-label")?.trim()
+    || svg.getAttribute("alt")?.trim()
+    || svg.querySelector("title")?.textContent?.trim()
+    || "formula";
+}
+
+function ensureSvgNamespace(svg: Element): string {
+  const html = svg.outerHTML;
+  return /\sxmlns=/.test(html) ? html : html.replace(/^<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+}
+
 export async function collectImages(
   html: string,
   options: CollectImagesOptions,
 ): Promise<CollectImagesResult> {
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
   const images = Array.from(document.querySelectorAll("img"));
-  if (images.length === 0) return { html, assets: [] };
+  const inlineSvgs = Array.from(document.querySelectorAll("svg"));
+  const videos = Array.from(document.querySelectorAll("video")) as unknown as Element[];
+  if (images.length === 0 && inlineSvgs.length === 0 && videos.length === 0) return { html, assets: [] };
 
   const fetchImage = options.fetchImage ?? ((url: string) => fetch(url, { headers: { Referer: options.baseUrl } }));
   const seen = new Map<string, string>();
   const assets: CollectedAsset[] = [];
   let index = 1;
+
+  for (const svg of inlineSvgs) {
+    if (!svg.parentNode) continue;
+    const filename = `image-${String(index).padStart(3, "0")}.svg`;
+    index += 1;
+    const data = new TextEncoder().encode(ensureSvgNamespace(svg));
+    const rel = `assets/${filename}`;
+    assets.push({ path: rel, data, contentType: "image/svg+xml" });
+    const img = document.createElement("img");
+    img.setAttribute("src", rel);
+    img.setAttribute("alt", svgImageAlt(svg));
+    const mathContainer = svg.parentElement?.tagName.toLowerCase() === "mjx-container" ? svg.parentElement : null;
+    if (mathContainer) {
+      mathContainer.replaceWith(img);
+    } else {
+      svg.replaceWith(img);
+    }
+  }
 
   for (const img of images) {
     const raw = imageSource(img);

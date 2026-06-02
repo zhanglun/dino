@@ -62,4 +62,32 @@ describe("collectImages", () => {
     expect(result.html).toBe("<p>plain</p>");
     expect(result.assets).toHaveLength(0);
   });
+
+  it("extracts inline SVG as asset and replaces with img", async () => {
+    const result = await collectImages(
+      '<p><svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg></p>',
+      { baseUrl: "https://example.com/post" },
+    );
+
+    expect(result.assets).toHaveLength(1);
+    expect(result.assets[0].path).toBe("assets/image-001.svg");
+    expect(result.assets[0].contentType).toBe("image/svg+xml");
+    expect(result.html).toContain('src="assets/image-001.svg"');
+    expect(result.html).not.toContain("<svg");
+  });
+
+  it("processes SVG and image together, sharing index counter", async () => {
+    const result = await collectImages(
+      '<p><svg xmlns="http://www.w3.org/2000/svg"><rect/></svg><img src="/photo.png"></p>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () =>
+          new Response(new Uint8Array([1, 2]), { headers: { "content-type": "image/png" } }),
+      },
+    );
+
+    expect(result.assets).toHaveLength(2);
+    expect(result.assets[0].path).toBe("assets/image-001.svg");
+    expect(result.assets[1].path).toBe("assets/image-002.png");
+  });
 });
