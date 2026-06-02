@@ -48,7 +48,7 @@ function ensureSvgNamespace(svg: Element): string {
 }
 
 function videoSource(video: Element): string | null {
-  const isStream = (s: string) => /\.m3u8|\.mpd|\bblob:\b|\bdata:/i.test(s);
+  const isStream = (s: string) => /\.m3u8|\.mpd/i.test(s) || s.startsWith("blob:") || s.startsWith("data:");
   const src = video.getAttribute("src") ?? "";
   if (src && !isStream(src)) return src;
   for (const source of Array.from(video.querySelectorAll("source")) as unknown as Element[]) {
@@ -164,7 +164,7 @@ export async function collectImages(
       continue;
     }
     const contentType = response.headers.get("content-type") ?? "";
-    if (contentType && !contentType.startsWith("video/") && contentType !== "application/octet-stream") {
+    if (!contentType.startsWith("video/") && contentType !== "application/octet-stream") {
       console.error(`Video skipped (content-type: ${contentType}): ${absolute.slice(0, 80)}`);
       continue;
     }

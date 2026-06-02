@@ -173,4 +173,16 @@ describe("collectImages", () => {
     expect(result.assets).toHaveLength(1);
     expect(result.assets[0].path).toBe("assets/video-001.mp4");
   });
+
+  it("skips video response with empty content-type", async () => {
+    const result = await collectImages(
+      '<video src="https://example.com/clip.mp4"></video>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () => new Response("<html>error</html>", { headers: { "content-type": "" } }),
+      },
+    );
+
+    expect(result.assets).toHaveLength(0);
+  });
 });
