@@ -113,4 +113,64 @@ describe("collectImages", () => {
     const svgText = new TextDecoder().decode(result.assets[0].data);
     expect(svgText).toContain('xmlns="http://www.w3.org/2000/svg"');
   });
+
+  it("downloads video and replaces with link", async () => {
+    const result = await collectImages(
+      '<p><video src="https://example.com/clip.mp4"></video></p>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () =>
+          new Response(new Uint8Array([10, 20, 30]), { headers: { "content-type": "video/mp4" } }),
+      },
+    );
+
+    expect(result.assets).toHaveLength(1);
+    expect(result.assets[0].path).toBe("assets/video-001.mp4");
+    expect(result.assets[0].contentType).toBe("video/mp4");
+    expect(Array.from(result.assets[0].data)).toEqual([10, 20, 30]);
+    expect(result.html).toContain('href="assets/video-001.mp4"');
+    expect(result.html).toContain("▶ video");
+    expect(result.html).not.toContain("<video");
+  });
+
+  it("extracts video URL from <source> child element", async () => {
+    const result = await collectImages(
+      '<video><source src="https://example.com/clip.webm" type="video/webm"></video>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () =>
+          new Response(new Uint8Array([1]), { headers: { "content-type": "video/webm" } }),
+      },
+    );
+
+    expect(result.assets[0].path).toBe("assets/video-001.webm");
+  });
+
+  it("skips HLS streaming video (.m3u8)", async () => {
+    let called = false;
+    const result = await collectImages(
+      '<video src="https://example.com/stream.m3u8"></video>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () => { called = true; return new Response(""); },
+      },
+    );
+
+    expect(called).toBe(false);
+    expect(result.assets).toHaveLength(0);
+  });
+
+  it("processes video on page with no img elements (no early return)", async () => {
+    const result = await collectImages(
+      '<p>text</p><video src="https://example.com/clip.mp4"></video>',
+      {
+        baseUrl: "https://example.com/post",
+        fetchImage: async () =>
+          new Response(new Uint8Array([1]), { headers: { "content-type": "video/mp4" } }),
+      },
+    );
+
+    expect(result.assets).toHaveLength(1);
+    expect(result.assets[0].path).toBe("assets/video-001.mp4");
+  });
 });

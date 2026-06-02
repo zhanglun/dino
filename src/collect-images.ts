@@ -47,6 +47,25 @@ function ensureSvgNamespace(svg: Element): string {
   return /\sxmlns=/.test(html) ? html : html.replace(/^<svg\b/i, '<svg xmlns="http://www.w3.org/2000/svg"');
 }
 
+function videoSource(video: Element): string | null {
+  const isStream = (s: string) => /\.m3u8|\.mpd|\bblob:\b|\bdata:/i.test(s);
+  const src = video.getAttribute("src") ?? "";
+  if (src && !isStream(src)) return src;
+  for (const source of Array.from(video.querySelectorAll("source")) as unknown as Element[]) {
+    const s = source.getAttribute("src") ?? "";
+    if (s && !isStream(s)) return s;
+  }
+  return null;
+}
+
+function videoExtension(contentType: string, url: string): string {
+  const pathExt = extname(new URL(url).pathname).replace(/[^.a-z0-9]/gi, "");
+  if (pathExt && pathExt.length <= 8) return pathExt;
+  if (contentType.includes("webm")) return ".webm";
+  if (contentType.includes("ogg") || contentType.includes("ogv")) return ".ogv";
+  return ".mp4";
+}
+
 export async function collectImages(
   html: string,
   options: CollectImagesOptions,
@@ -124,6 +143,41 @@ export async function collectImages(
     img.removeAttribute("data-srcset");
     img.removeAttribute("data-original");
     img.removeAttribute("data-src");
+  }
+
+  for (const video of videos) {
+    const raw = videoSource(video);
+    if (!raw) continue;
+    let absolute: string;
+    try {
+      absolute = new URL(raw, options.baseUrl).toString();
+    } catch { continue; }
+    let response: Response;
+    try {
+      response = await fetchImage(absolute);
+    } catch (err) {
+      console.error(`Video fetch error: ${absolute.slice(0, 80)} — ${(err as Error).message}`);
+      continue;
+    }
+    if (!response.ok) {
+      console.error(`Video fetch ${response.status}: ${absolute.slice(0, 80)}`);
+      continue;
+    }
+    const contentType = response.headers.get("content-type") ?? "";
+    if (contentType && !contentType.startsWith("video/") && contentType !== "application/octet-stream") {
+      console.error(`Video skipped (content-type: ${contentType}): ${absolute.slice(0, 80)}`);
+      continue;
+    }
+    const ext = videoExtension(contentType, absolute);
+    const filename = `video-${String(index).padStart(3, "0")}${ext}`;
+    index += 1;
+    const data = new Uint8Array(await response.arrayBuffer());
+    const rel = `assets/${filename}`;
+    assets.push({ path: rel, data, contentType: contentType || "video/mp4" });
+    const link = document.createElement("a");
+    link.setAttribute("href", rel);
+    link.textContent = "▶ video";
+    video.replaceWith(link);
   }
 
   return { html: document.body.innerHTML, assets };
