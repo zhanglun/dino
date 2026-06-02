@@ -63,7 +63,7 @@ export async function collectImages(
   let index = 1;
 
   for (const svg of inlineSvgs) {
-    if (!svg.parentNode) continue;
+    if (!(svg as unknown as { isConnected?: boolean }).isConnected) continue;
     const filename = `image-${String(index).padStart(3, "0")}.svg`;
     index += 1;
     const data = new TextEncoder().encode(ensureSvgNamespace(svg));

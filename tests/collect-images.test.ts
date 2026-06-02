@@ -90,4 +90,27 @@ describe("collectImages", () => {
     expect(result.assets[0].path).toBe("assets/image-001.svg");
     expect(result.assets[1].path).toBe("assets/image-002.png");
   });
+
+  it("replaces mjx-container wrapping SVG, not just the SVG itself", async () => {
+    const result = await collectImages(
+      '<p><mjx-container><svg xmlns="http://www.w3.org/2000/svg"><circle r="5"/></svg></mjx-container></p>',
+      { baseUrl: "https://example.com/post" },
+    );
+
+    expect(result.assets).toHaveLength(1);
+    expect(result.html).not.toContain("mjx-container");
+    expect(result.html).not.toContain("<svg");
+    expect(result.html).toContain('src="assets/image-001.svg"');
+  });
+
+  it("injects xmlns namespace into SVG that lacks it", async () => {
+    const result = await collectImages(
+      '<p><svg><circle r="5"/></svg></p>',
+      { baseUrl: "https://example.com/post" },
+    );
+
+    expect(result.assets).toHaveLength(1);
+    const svgText = new TextDecoder().decode(result.assets[0].data);
+    expect(svgText).toContain('xmlns="http://www.w3.org/2000/svg"');
+  });
 });
