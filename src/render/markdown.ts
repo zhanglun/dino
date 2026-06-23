@@ -6,8 +6,38 @@ function normalizeTablesViaLinkedom(html: string): string {
   const { document } = parseHTML(`<!doctype html><html><body>${html}</body></html>`);
   // Re-serialize all tables through linkedom to get a clean structure
   // that Node.js DOMParser (used by turndown) can handle without crashing.
+  // Also normalize headerless tables so turndown-plugin-gfm can convert them:
+  // the GFM table rule only fires when the first row is <th>. Tables that
+  // arrive as pure <td> are otherwise left as raw HTML in the markdown output
+  // (and render as escaped strings when the consumer disables inline HTML).
   for (const table of Array.from(document.querySelectorAll("table"))) {
     const el = table as unknown as Element;
+    const hasHeader = el.querySelector("thead, th") !== null;
+    const rows = Array.from(el.querySelectorAll("tr")) as unknown as Element[];
+    if (!hasHeader && rows.length === 1) {
+      // A single row without a header is a layout table (e.g. WeChat numbering
+      // blocks / stat cards), not tabular data. Flatten to a paragraph so the
+      // content reads naturally instead of rendering as a header-only table.
+      const cells = (el.querySelectorAll("td, th") as unknown as Element[])
+        .map((c) => (c.textContent ?? "").replace(/\s+/g, " ").trim())
+        .filter((t) => t.length > 0);
+      const p = document.createElement("p");
+      p.textContent = cells.join("\u2003");
+      el.replaceWith(p);
+      continue;
+    }
+    if (!hasHeader) {
+      // Multi-row headerless table: promote the first row's <td> to <th> so
+      // the GFM rule treats it as the header row.
+      const firstRow = rows[0];
+      if (firstRow) {
+        for (const cell of Array.from(firstRow.querySelectorAll("td")) as unknown as Element[]) {
+          cell.outerHTML = `<th>${cell.innerHTML}</th>`;
+        }
+      }
+    }
+    // Re-serialize through a clone to drop layout attributes/styles that can
+    // confuse turndown's DOMParser.
     const clone = document.createElement("table");
     clone.innerHTML = el.innerHTML;
     el.replaceWith(clone);

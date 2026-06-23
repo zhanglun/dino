@@ -37,7 +37,7 @@ describe("capture", () => {
     const result = await capture("https://example.com/covered", {
       staticFetch: async () => `<!doctype html><html><head><title>Covered</title><meta property="og:image" content="${coverUrl}"></head><body><article>${longParagraph()}</article></body></html>`,
       browserFetch: async () => { throw new Error("browser should not be used"); },
-      fetchImage: async (url: string) => {
+      fetchImage: async (url) => {
         if (url === coverUrl) {
           return new Response(new Uint8Array([1, 2, 3]), { headers: { "content-type": "image/jpeg" } });
         }
@@ -101,7 +101,7 @@ describe("capture", () => {
     const result = await capture("https://example.com/both", {
       staticFetch: async () => `<!doctype html><html><head><title>Both</title><meta property="og:image" content="${coverUrl}"></head><body><article>${longParagraph()}<img src="/body.png"></article></body></html>`,
       browserFetch: async () => { throw new Error("browser should not be used"); },
-      fetchImage: async (url: string) => {
+      fetchImage: async (url) => {
         if (url === coverUrl) {
           return new Response(new Uint8Array([10, 11]), { headers: { "content-type": "image/png" } });
         }
